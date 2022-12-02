@@ -1,36 +1,16 @@
 use std::{
     fs::File,
     io::{self, BufRead},
-    str::FromStr,
 };
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-enum Shape {
-    Rock,
-    Paper,
-    Scissors,
-}
+// rock = 1, paper = 2, scissors = 3
 
-impl Shape {
-    fn score(&self) -> i32 {
-        match self {
-            Shape::Rock => 1,
-            Shape::Paper => 2,
-            Shape::Scissors => 3,
-        }
-    }
-}
-
-impl FromStr for Shape {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "A" | "X" => Ok(Shape::Rock),
-            "B" | "Y" => Ok(Shape::Paper),
-            "C" | "Z" => Ok(Shape::Scissors),
-            _ => Err(()),
-        }
+fn to_shape(s: &str) -> i32 {
+    match s {
+        "A" | "X" => 1,
+        "B" | "Y" => 2,
+        "C" | "Z" => 3,
+        _ => panic!(),
     }
 }
 
@@ -47,11 +27,11 @@ fn read_file_to_lines(path: &str) -> Vec<String> {
     lines.into_iter().map(|line| line.unwrap()).collect()
 }
 
-fn outcome(a: Shape, b: Shape) -> i32 {
+fn outcome(a: i32, b: i32) -> i32 {
     match (a, b) {
-        (Shape::Rock, Shape::Scissors) => 6,
-        (Shape::Scissors, Shape::Paper) => 6,
-        (Shape::Paper, Shape::Rock) => 6,
+        (1, 3) => 6,
+        (3, 2) => 6,
+        (2, 1) => 6,
         (a, b) if a == b => 3,
         (_, _) => 0,
     }
@@ -59,10 +39,10 @@ fn outcome(a: Shape, b: Shape) -> i32 {
 
 fn round_score(line: &str) -> i32 {
     let pieces: Vec<&str> = line.split(" ").collect();
-    let opponent = pieces[0].parse::<Shape>().unwrap();
-    let me = pieces[1].parse::<Shape>().unwrap();
+    let opponent = to_shape(pieces[0]);
+    let me = to_shape(pieces[1]);
 
-    me.score() + outcome(me, opponent)
+    me + outcome(me, opponent)
 }
 
 fn score_total(lines: Vec<String>) -> i32 {
@@ -73,9 +53,9 @@ fn score_total(lines: Vec<String>) -> i32 {
 
 #[test]
 fn test_outcome() {
-    assert_eq!(6, outcome(Shape::Rock, Shape::Scissors));
-    assert_eq!(0, outcome(Shape::Rock, Shape::Paper));
-    assert_eq!(3, outcome(Shape::Rock, Shape::Rock));
+    assert_eq!(6, outcome(1, 3));
+    assert_eq!(0, outcome(1, 2));
+    assert_eq!(3, outcome(1, 2));
 }
 
 #[test]
