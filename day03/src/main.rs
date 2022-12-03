@@ -5,7 +5,8 @@ use std::{
 
 fn main() {
     let lines = read_file_to_lines("./input.txt");
-    println!("total: {}", solve(lines));
+    println!("total: {}", solve(lines.clone()));
+    println!("total v2: {}", solve_v2(lines));
 }
 
 fn read_file_to_lines(path: &str) -> Vec<String> {
@@ -18,7 +19,19 @@ fn read_file_to_lines(path: &str) -> Vec<String> {
 fn solve(lines: Vec<String>) -> i32 {
     lines
         .iter()
-        .map(|line| to_priority(find_common(line)))
+        .map(|line| to_priority(find_common(split(line))))
+        .sum::<i32>()
+}
+
+fn solve_v2(lines: Vec<String>) -> i32 {
+    lines
+        .chunks(3)
+        .into_iter()
+        .map(|lines| {
+            let lines: Vec<&str> = lines.into_iter().map(|line| line.as_str()).collect();
+            let c = find_common(lines);
+            to_priority(c)
+        })
         .sum::<i32>()
 }
 
@@ -32,27 +45,34 @@ fn to_priority(c: char) -> i32 {
     }
 }
 
-fn find_common(s: &str) -> char {
+fn split(s: &str) -> Vec<&str> {
     let mid = s.len() / 2;
-    let le = &s[0..mid].chars().collect::<Vec<char>>();
-    let ri = &s[mid..].chars().collect::<Vec<char>>();
-    for c in le {
-        if ri.contains(c) {
-            return *c;
+    vec![&s[0..mid], &s[mid..]]
+}
+
+fn find_common(s: Vec<&str>) -> char {
+    for c in 'a'..'{' {
+        if s.iter().all(|&s| s.contains(c)) {
+            return c;
+        }
+    }
+    for c in 'A'..'[' {
+        if s.iter().all(|&s| s.contains(c)) {
+            return c;
         }
     }
 
-    panic!();
+    panic!("Could not find common char for {:?}", s);
 }
 
 #[test]
 fn test_find_common() {
-    assert_eq!('p', find_common("vJrwpWtwJgWrhcsFMMfFFhFp"));
-    assert_eq!('L', find_common("jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL"));
-    assert_eq!('P', find_common("PmmdzqPrVvPwwTWBwg"));
-    assert_eq!('v', find_common("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn"));
-    assert_eq!('t', find_common("ttgJtRGJQctTZtZT"));
-    assert_eq!('s', find_common("CrZsJsPPZsGzwwsLwLmpwMDw"));
+    assert_eq!('p', find_common(split("vJrwpWtwJgWrhcsFMMfFFhFp")));
+    assert_eq!('L', find_common(split("jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL")));
+    assert_eq!('P', find_common(split("PmmdzqPrVvPwwTWBwg")));
+    assert_eq!('v', find_common(split("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn")));
+    assert_eq!('t', find_common(split("ttgJtRGJQctTZtZT")));
+    assert_eq!('s', find_common(split("CrZsJsPPZsGzwwsLwLmpwMDw")));
 }
 
 #[test]
@@ -70,6 +90,21 @@ fn test_solve() {
     assert_eq!(
         157,
         solve(vec![
+            "vJrwpWtwJgWrhcsFMMfFFhFp".into(),
+            "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL".into(),
+            "PmmdzqPrVvPwwTWBwg".into(),
+            "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn".into(),
+            "ttgJtRGJQctTZtZT".into(),
+            "CrZsJsPPZsGzwwsLwLmpwMDw".into(),
+        ])
+    );
+}
+
+#[test]
+fn test_solve_v2() {
+    assert_eq!(
+        70,
+        solve_v2(vec![
             "vJrwpWtwJgWrhcsFMMfFFhFp".into(),
             "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL".into(),
             "PmmdzqPrVvPwwTWBwg".into(),
