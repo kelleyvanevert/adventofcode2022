@@ -5,20 +5,36 @@ use std::fs;
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
-    let (mut stacks, instructions) = parse(&filecontents);
+    let (stacks, instructions) = parse(&filecontents);
 
-    crane(&mut stacks, instructions);
-    println!("{}", top_crates(&stacks));
+    let mut stacks_a = stacks.clone();
+    crane(&mut stacks_a, instructions.clone(), false);
+    println!("first result: {}", top_crates(&stacks_a));
+
+    let mut stacks_b = stacks.clone();
+    crane(&mut stacks_b, instructions, true);
+    println!("second result: {}", top_crates(&stacks_b));
 }
 
-fn crane(stacks: &mut Vec<Vec<String>>, instructions: Vec<(usize, usize, usize)>) {
+fn crane(
+    stacks: &mut Vec<Vec<String>>,
+    instructions: Vec<(usize, usize, usize)>,
+    bonus_rules: bool,
+) {
     for (amount, source, destination) in instructions {
-        // println!("instr {}, {}, {}", amount, source, destination);
-        for _ in 0..amount {
-            let c = stacks[source - 1].pop().unwrap();
-            // println!(" - {} {}", i, c);
-            stacks[destination - 1].push(c);
-            // println!("   - {:?}", stacks);
+        if bonus_rules {
+            let len = stacks[source - 1].len();
+
+            let mut cs = stacks[source - 1]
+                .splice((len - amount).., [])
+                .collect::<Vec<String>>();
+
+            stacks[destination - 1].append(&mut cs);
+        } else {
+            for _ in 0..amount {
+                let c = stacks[source - 1].pop().unwrap();
+                stacks[destination - 1].push(c);
+            }
         }
     }
 }
@@ -47,9 +63,10 @@ move 2 from 2 to 1
 move 1 from 1 to 2
 ";
 
-    let (mut stacks, instructions) = parse(str);
-    crane(&mut stacks, instructions);
+    let (stacks, instructions) = parse(str);
 
+    let mut stacks_a = stacks.clone();
+    crane(&mut stacks_a, instructions.clone(), false);
     assert_eq!(
         vec![
             vec!["C".to_owned()],
@@ -61,8 +78,24 @@ move 1 from 1 to 2
                 "Z".to_owned()
             ]
         ],
-        stacks,
+        stacks_a,
     );
+    assert_eq!("CMZ".to_owned(), top_crates(&stacks_a));
 
-    assert_eq!("CMZ".to_owned(), top_crates(&stacks));
+    let mut stacks_b = stacks.clone();
+    crane(&mut stacks_b, instructions, true);
+    assert_eq!(
+        vec![
+            vec!["M".to_owned()],
+            vec!["C".to_owned()],
+            vec![
+                "P".to_owned(),
+                "Z".to_owned(),
+                "N".to_owned(),
+                "D".to_owned()
+            ]
+        ],
+        stacks_b,
+    );
+    assert_eq!("MCD".to_owned(), top_crates(&stacks_b));
 }
