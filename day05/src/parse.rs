@@ -4,7 +4,7 @@ pub type Stack = Vec<String>;
 pub type Instruction = (usize, usize, usize);
 
 pub fn parse(s: &str) -> (Vec<Stack>, Vec<Instruction>) {
-    let re_stack_layer = Regex::new(r"\[([A-Z])\]|   [ ]?").unwrap();
+    let re_stack_layer = Regex::new(r"(?:\[([A-Z])\]|   )(?: |$)").unwrap();
     let re_inst = Regex::new(r"^move ([0-9]+) from ([0-9]+) to ([0-9]+)$").unwrap();
 
     let mut stacks: Vec<Stack> = vec![];
@@ -61,12 +61,7 @@ move 1 from 1 to 2
                 vec!["M".to_owned(), "C".to_owned(), "D".to_owned()],
                 vec!["P".to_owned()]
             ],
-            vec![
-                (1, 2, 1),
-                (3, 1, 3),
-                (2, 2, 1),
-                (1, 1, 2),
-            ]
+            vec![(1, 2, 1), (3, 1, 3), (2, 2, 1), (1, 1, 2),]
         ),
         parse(str)
     );
