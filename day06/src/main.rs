@@ -3,20 +3,24 @@ use std::fs;
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
     println!(
-        "starter marker found: {}",
-        find_packet_marker(&filecontents)
+        "first packet marker found: {}",
+        find_marker(&filecontents, 4)
+    );
+    println!(
+        "first message marker found: {}",
+        find_marker(&filecontents, 14)
     );
 }
 
-fn find_packet_marker(s: &str) -> usize {
+fn find_marker(s: &str, len: usize) -> usize {
     s.chars()
         .collect::<Vec<char>>()
-        .windows(4)
+        .windows(len)
         .enumerate()
         .find(|&(_, cs)| all_different(cs))
         .unwrap()
         .0
-        + 4
+        + len
 }
 
 fn all_different(cs: &[char]) -> bool {
@@ -32,9 +36,15 @@ fn all_different(cs: &[char]) -> bool {
 }
 
 #[test]
-fn test_find_packet_marker() {
-    assert_eq!(find_packet_marker("bvwbjplbgvbhsrlpgdmjqwftvncz"), 5);
-    assert_eq!(find_packet_marker("nppdvjthqldpwncqszvftbrmjlhg"), 6);
-    assert_eq!(find_packet_marker("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"), 10);
-    assert_eq!(find_packet_marker("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"), 11);
+fn test_find_marker() {
+    assert_eq!(find_marker("bvwbjplbgvbhsrlpgdmjqwftvncz", 4), 5);
+    assert_eq!(find_marker("nppdvjthqldpwncqszvftbrmjlhg", 4), 6);
+    assert_eq!(find_marker("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 4), 10);
+    assert_eq!(find_marker("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 4), 11);
+
+    assert_eq!(find_marker("mjqjpqmgbljsphdztnvjfqwrcgsmlb", 14), 19);
+    assert_eq!(find_marker("bvwbjplbgvbhsrlpgdmjqwftvncz", 14), 23);
+    assert_eq!(find_marker("nppdvjthqldpwncqszvftbrmjlhg", 14), 23);
+    assert_eq!(find_marker("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 14), 29);
+    assert_eq!(find_marker("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 14), 26);
 }
