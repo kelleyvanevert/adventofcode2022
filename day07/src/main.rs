@@ -32,17 +32,18 @@ fn compute_folder_size(curr: usize, nodes: &Vec<Node>, smol: &mut Vec<usize>) ->
     accum
 }
 
+// There's redundancy in here, but, it's pragmatic
 #[derive(PartialEq, Debug)]
-struct Node {
+struct Node<'a> {
     is_folder: bool,
     parent: usize,
-    name: String,
+    name: &'a str,
     size: usize,
     children: Vec<usize>,
 }
 
-impl Node {
-    fn folder(parent: usize, name: String) -> Self {
+impl<'a> Node<'a> {
+    fn new_folder(parent: usize, name: &'a str) -> Self {
         Self {
             is_folder: true,
             parent,
@@ -52,7 +53,7 @@ impl Node {
         }
     }
 
-    fn file(parent: usize, name: String, size: usize) -> Self {
+    fn new_file(parent: usize, name: &'a str, size: usize) -> Self {
         Self {
             is_folder: false,
             parent,
@@ -81,8 +82,8 @@ impl Node {
     }
 }
 
-fn parse(s: &str) -> Vec<Node> {
-    let mut nodes = vec![Node::folder(0, "/".to_string())];
+fn parse<'a>(s: &'a str) -> Vec<Node<'a>> {
+    let mut nodes = vec![Node::new_folder(0, "/")];
     let mut curr = 0;
 
     for line in s.lines() {
@@ -105,13 +106,13 @@ fn parse(s: &str) -> Vec<Node> {
         } else if line.starts_with("$ ls") {
             // noop
         } else if line.starts_with("dir ") {
-            let dir = Node::folder(curr, line[4..].to_string());
+            let dir = Node::new_folder(curr, &line[4..]);
             let i = nodes.len();
             nodes.push(dir);
             nodes[curr].children.push(i);
         } else {
             let (size, name) = line.split_once(" ").unwrap();
-            let file = Node::file(curr, name.to_string(), size.parse::<usize>().unwrap());
+            let file = Node::new_file(curr, name, size.parse::<usize>().unwrap());
             let i = nodes.len();
             nodes.push(file);
             nodes[curr].children.push(i);
