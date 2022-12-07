@@ -4,25 +4,34 @@ fn main() {
     let s = fs::read_to_string("./input.txt").unwrap();
     let nodes = parse(&s);
     println!("{}", nodes[0].visualize("", &nodes));
-    println!("total of folders up to 100000: {}", solve(&nodes));
+    println!("(total, smol_total, rm_size) = {:?}", solve(&nodes));
 }
 
-fn solve(nodes: &Vec<Node>) -> usize {
-    let mut smol: Vec<usize> = vec![];
+fn solve(nodes: &Vec<Node>) -> (usize, usize, usize) {
+    let mut folder_sizes: Vec<usize> = vec![];
 
-    compute_folder_size(0, nodes, &mut smol);
+    let total = compute_folder_size(0, nodes, &mut folder_sizes);
+    let unused = 70000000 - total;
+    let needed = 30000000 - unused;
 
-    smol.iter().sum::<usize>()
+    folder_sizes.sort();
+
+    let smol_total = folder_sizes
+        .iter()
+        .filter(|&&size| size <= 100000)
+        .sum::<usize>();
+
+    let rm_size = *folder_sizes.iter().find(|&&s| s >= needed).unwrap();
+
+    (total, smol_total, rm_size)
 }
 
-fn compute_folder_size(curr: usize, nodes: &Vec<Node>, smol: &mut Vec<usize>) -> usize {
+fn compute_folder_size(curr: usize, nodes: &Vec<Node>, folder_sizes: &mut Vec<usize>) -> usize {
     let mut accum = 0;
     for &i in nodes[curr].children.iter() {
         if nodes[i].is_folder {
-            let folder_size = compute_folder_size(i, nodes, smol);
-            if folder_size <= 100000 {
-                smol.push(folder_size);
-            }
+            let folder_size = compute_folder_size(i, nodes, folder_sizes);
+            folder_sizes.push(folder_size);
             accum += folder_size;
         } else {
             accum += nodes[i].size;
@@ -169,5 +178,5 @@ $ ls
         nodes[0].visualize("", &nodes)
     );
 
-    assert_eq!(95437, solve(&nodes));
+    assert_eq!((48381165, 95437, 24933642), solve(&nodes));
 }
