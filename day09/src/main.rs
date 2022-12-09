@@ -3,18 +3,19 @@ use std::{collections::HashSet, fs};
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
 
-    let num_visited = solve(&filecontents);
-    println!("Num visited: {}", num_visited);
+    println!("Num visited: {}", solve(&filecontents, 2));
+    println!("Num visited v2: {}", solve(&filecontents, 10));
 }
 
 type Pos = (i32, i32);
 
-fn solve(s: &str) -> usize {
-    let mut visited: HashSet<Pos> = HashSet::new();
-    let mut head: Pos = (0, 0);
-    let mut tail: Pos = (0, 0);
+fn solve(s: &str, len: usize) -> usize {
+    assert!(len >= 2);
 
-    visited.insert(tail);
+    let mut visited: HashSet<Pos> = HashSet::new();
+    let mut rope: Vec<Pos> = vec![(0, 0); len]; // head first
+
+    visited.insert(*rope.last().unwrap());
 
     for line in s.lines() {
         if line == "" {
@@ -27,18 +28,20 @@ fn solve(s: &str) -> usize {
         for _ in 0..num {
             // move head
             match direction {
-                "R" => head.0 += 1,
-                "L" => head.0 -= 1,
-                "U" => head.1 += 1,
-                "D" => head.1 -= 1,
+                "R" => rope[0].0 += 1,
+                "L" => rope[0].0 -= 1,
+                "U" => rope[0].1 += 1,
+                "D" => rope[0].1 -= 1,
                 _ => unreachable!(),
             }
 
             // move tail
-            tail = move_towards(head, tail);
+            for i in 0..(rope.len() - 1) {
+                rope[i + 1] = move_towards(rope[i], rope[i + 1]);
+            }
 
             // remember visited
-            visited.insert(tail);
+            visited.insert(*rope.last().unwrap());
         }
     }
 
@@ -54,6 +57,7 @@ fn move_towards(head: Pos, tail: Pos) -> Pos {
         return tail;
     }
 
+    // a bit weirdly expressed, but I'm using the fact that (3/2) rounds to 1 to express the movement in a single equation
     return (
         tail.0 + (dx + dx.signum()) / 2,
         tail.1 + (dy + dy.signum()) / 2,
@@ -72,5 +76,7 @@ L 5
 R 2
 ";
 
-    assert_eq!(13, solve(s));
+    assert_eq!(13, solve(s, 2));
+
+    assert_eq!(1, solve(s, 10));
 }
