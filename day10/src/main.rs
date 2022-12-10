@@ -3,18 +3,26 @@ use std::fs;
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
 
-    println!("Solution: {}", solve(&filecontents));
+    let (accum, image) = solve(&filecontents);
+    println!("Solution: {}", accum);
+    println!("{}", image);
 }
 
-fn solve(s: &str) -> i32 {
+fn solve(s: &str) -> (i32, String) {
     let mut x = 1;
     let mut i = 1;
     let mut accum = 0;
+    let mut image: Vec<Vec<&str>> = vec![vec!["."; 40]; 6];
 
     let mut increase_cycle = |x: i32| {
         if (i + 20) % 40 == 0 {
             let signal_strength = i * x;
             accum += signal_strength;
+        }
+
+        let xy = ((i - 1) % 40, ((i - 1) / 40) % 6);
+        if x - 1 <= xy.0 && xy.0 <= x + 1 {
+            image[xy.1 as usize][xy.0 as usize] = "#";
         }
 
         i += 1;
@@ -35,9 +43,14 @@ fn solve(s: &str) -> i32 {
         }
     }
 
-    // increase_cycle(x);
-
-    accum
+    (
+        accum,
+        image
+            .iter()
+            .map(|line| line.join(""))
+            .collect::<Vec<String>>()
+            .join("\n"),
+    )
 }
 
 #[test]
@@ -189,5 +202,13 @@ noop
 noop
 noop";
 
-    assert_eq!(13140, solve(s));
+    let image = "##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######....."
+        .to_string();
+
+    assert_eq!((13140, image), solve(s));
 }
