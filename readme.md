@@ -42,3 +42,5 @@ See https://adventofcode.com/2022
     - Didn't actually learn today, but was reminded again of how taking a `mut p` where `P: FnMut` is more general than just `p: fn`. Not actually necessary even, but, I just took it from the `TakeWhile` implementation, and now `count_until` could also choose to be a closure that mutates.
 
 - **Day 9.** Fun, and especially a fun generalization in the bonus exercise this time :)
+
+- **Day 10.** Not really sure how the ownership transfers work, between the mutating closure and it's surrounding scope in `solve`, but, it works :D
