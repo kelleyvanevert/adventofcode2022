@@ -5,7 +5,7 @@ use regex::Regex;
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
-    println!("Monkey business: {}", solve(&parse(&filecontents)));
+    println!("Monkey business: {}", solve(&parse(&filecontents), false));
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -116,14 +116,19 @@ fn parse(s: &str) -> Vec<Monkey> {
     monkeys
 }
 
-fn solve(monkeys: &Vec<Monkey>) -> usize {
+fn solve(monkeys: &Vec<Monkey>, new_rules: bool) -> usize {
     let mut monkeys = monkeys.clone();
     let mut activity = vec![0usize; monkeys.len()];
 
-    for _round in 0..20 {
+    let num_rounds = if new_rules { 10_000 } else { 20 };
+
+    for _round in 0..num_rounds {
         for i in 0..monkeys.len() {
             for old in monkeys[i].items.clone() {
-                let new = monkeys[i].op_expr.eval(old) / 3;
+                let mut new = monkeys[i].op_expr.eval(old);
+                if !new_rules {
+                    new = new / 3;
+                }
                 let dest = if new % monkeys[i].div_check == 0 {
                     monkeys[i].dest_if_true
                 } else {
@@ -226,5 +231,6 @@ Monkey 3:
         ]
     );
 
-    assert_eq!(10605, solve(&monkeys));
+    assert_eq!(10605, solve(&monkeys, false));
+    assert_eq!(2713310158, solve(&monkeys, true));
 }
