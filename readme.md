@@ -44,3 +44,15 @@ See https://adventofcode.com/2022
 - **Day 9.** Fun, and especially a fun generalization in the bonus exercise this time :)
 
 - **Day 10.** Not really sure how the ownership transfers work, between the mutating closure and it's surrounding scope in `solve`, but, it works :D
+
+- **Day 11.** That was quite a bit harder! For three main reasons:
+
+  1. The parsing. I wanted to do it a bit more "defensively", and so I turned to the builder pattern for constructing the `Monkey` instances. After starting writing it myself, I decided a crate must exist for it, and I started using `derive_builder`. Then I spend some time fiddling with the level of "defensiveness" in the line parsing loop, struggling with putting the builder in an `Option` but also keeping it mutable, which turned out to be a hassle. In the end I just kept is pragmatic and simple.
+     - I like my cute little `MiniExpr` / `MiniNode` structs with their `parse` and `eval` implementations :P
+  2. Fighting with the borrow checker over mutating other monkeys while looping over the monkeys in each round. There must be a more elegant way of doing this, but, I was already spending so much time on today's challenge, that I just went with whatever worked :P
+  3. The bonus. I first tried the "silly thing" and just rewrote it to use `BigInt`s, but, that wouldn't have worked anyway, because the numbers get unmanageably large and the code would not stop running. The trick is that we're working modulo `n`, where I first (incorrectly) set `n` to each respective monkey's divisibility check number, but then later, after taking a break to help my roommate buy stuff for Christmas dinner, figured that it should be all these monkeys' numbers multiplied by each other, because the items move hands and therefore shouldn't lose information in between.
+
+  TODO:
+
+  - Learn better error handling, i.e. no more `type Err = ();`
+  - Learn how to do the mutable iterator & vector updates thing (point 2) in idiomatic Rust
