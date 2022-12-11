@@ -6,6 +6,7 @@ use regex::Regex;
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
     println!("Monkey business: {}", solve(&parse(&filecontents), false));
+    println!("Monkey business v2: {}", solve(&parse(&filecontents), true));
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -120,13 +121,17 @@ fn solve(monkeys: &Vec<Monkey>, new_rules: bool) -> usize {
     let mut monkeys = monkeys.clone();
     let mut activity = vec![0usize; monkeys.len()];
 
+    let m = monkeys.iter().fold(1, |a, m| a * m.div_check);
+
     let num_rounds = if new_rules { 10_000 } else { 20 };
 
     for _round in 0..num_rounds {
         for i in 0..monkeys.len() {
             for old in monkeys[i].items.clone() {
                 let mut new = monkeys[i].op_expr.eval(old);
-                if !new_rules {
+                if new_rules {
+                    new = new % m;
+                } else {
                     new = new / 3;
                 }
                 let dest = if new % monkeys[i].div_check == 0 {
