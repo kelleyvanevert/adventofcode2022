@@ -1,16 +1,22 @@
-use std::{collections::HashSet, fs};
+use std::{collections::HashSet, fs, time::Instant};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
     let (start, end, map) = parse(&filecontents);
+
+    let now = Instant::now();
     println!(
         "Min number of steps: {}",
         solve(HashSet::from([start]), end, &map)
     );
+    println!(" - took {} ms", now.elapsed().as_millis());
+
+    let now = Instant::now();
     println!(
         "Best route: {}",
         solve(find_starting_positions(&map), end, &map)
     );
+    println!(" - took {} ms", now.elapsed().as_millis());
 }
 
 type Pos = (usize, usize);

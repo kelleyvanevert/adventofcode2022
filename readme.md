@@ -56,3 +56,5 @@ See https://adventofcode.com/2022
 
   - Learn better error handling, i.e. no more `type Err = ();`
   - Learn how to do the mutable iterator & vector updates thing (point 2) in idiomatic Rust
+
+- **Day 12.** Ai! We seem to have gotten to the part of the advent calendar where every challenge is getting hard :P Where yesterday, for the bonus star, you needed a bit of mathematical knowledge, today, you need a programmer's trick: Instead of just performing the entire search algorithm once for every possible starting point, which amounts to a very lengthy computation, it's better to generalize the algorithm, which then interestingly takes less time also :P What a fun bonus star generalization again!
