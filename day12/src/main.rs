@@ -1,9 +1,16 @@
-use std::fs;
+use std::{collections::HashSet, fs};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
     let (start, end, map) = parse(&filecontents);
-    println!("Min number of steps: {}", solve(start, end, &map));
+    println!(
+        "Min number of steps: {}",
+        solve(HashSet::from([start]), end, &map)
+    );
+    println!(
+        "Best route: {}",
+        solve(find_starting_positions(&map), end, &map)
+    );
 }
 
 type Pos = (usize, usize);
@@ -71,12 +78,14 @@ fn parse(s: &str) -> (Pos, Pos, HeightMap) {
     )
 }
 
-fn solve(start: Pos, end: Pos, map: &HeightMap) -> usize {
+fn solve(start: HashSet<Pos>, end: Pos, map: &HeightMap) -> usize {
     let mut reachability: Vec<Vec<Option<usize>>> = vec![vec![None; map.width]; map.height];
 
-    reachability[start.1][start.0] = Some(0);
+    for p in &start {
+        reachability[p.1][p.0] = Some(0);
+    }
 
-    let mut todo = vec![start];
+    let mut todo = start.into_iter().collect::<Vec<Pos>>();
 
     while todo.len() > 0 {
         let p = todo.pop().unwrap();
@@ -102,6 +111,20 @@ fn solve(start: Pos, end: Pos, map: &HeightMap) -> usize {
     reachability[end.1][end.0].unwrap()
 }
 
+fn find_starting_positions(map: &HeightMap) -> HashSet<Pos> {
+    let mut ps = HashSet::new();
+
+    for y in 0..map.height {
+        for x in 0..map.width {
+            if map.height((x, y)) == 0 {
+                ps.insert((x, y));
+            }
+        }
+    }
+
+    ps
+}
+
 #[test]
 fn test_all() {
     let s = "Sabqponm
@@ -123,5 +146,6 @@ abdefghi";
     };
 
     assert_eq!(((0, 0), (5, 2), map.clone()), parse(s));
-    assert_eq!(31, solve((0, 0), (5, 2), &map));
+    assert_eq!(31, solve(HashSet::from([(0, 0)]), (5, 2), &map));
+    assert_eq!(29, solve(find_starting_positions(&map), (5, 2), &map));
 }
