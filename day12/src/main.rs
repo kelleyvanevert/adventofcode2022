@@ -1,60 +1,21 @@
-use std::{fs, str::FromStr};
+use std::fs;
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
-    let state = filecontents.parse().unwrap();
-    println!("Min number of steps: {}", solve(&state));
+    let (start, end, map) = parse(&filecontents);
+    println!("Min number of steps: {}", solve(start, end, &map));
 }
 
 type Pos = (usize, usize);
 
-#[derive(PartialEq, Debug)]
-struct State {
-    pos: Pos,
-    dest: Pos,
+#[derive(PartialEq, Clone, Debug)]
+struct HeightMap {
     height: usize,
     width: usize,
     map: Vec<Vec<usize>>,
 }
 
-impl FromStr for State {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut pos = (0, 0);
-        let mut dest = (0, 0);
-        let map: Vec<Vec<usize>> = s
-            .lines()
-            .enumerate()
-            .map(|(y, line)| {
-                line.chars()
-                    .enumerate()
-                    .map(|(x, c)| match c {
-                        'S' => {
-                            pos = (x, y);
-                            0
-                        }
-                        'E' => {
-                            dest = (x, y);
-                            25
-                        }
-                        _ => c as usize - 'a' as usize,
-                    })
-                    .collect()
-            })
-            .collect();
-
-        Ok(Self {
-            pos,
-            dest,
-            height: map.len(),
-            width: map[0].len(),
-            map,
-        })
-    }
-}
-
-impl State {
+impl HeightMap {
     fn height(&self, pos: Pos) -> usize {
         self.map[pos.1][pos.0]
     }
@@ -75,22 +36,53 @@ impl State {
     }
 }
 
-fn solve(s: &State) -> usize {
-    let mut reachability: Vec<Vec<Option<usize>>> = s
-        .map
-        .iter()
-        .map(|line| line.iter().map(|_| None).collect())
+fn parse(s: &str) -> (Pos, Pos, HeightMap) {
+    let mut pos = (0, 0);
+    let mut dest = (0, 0);
+    let map: Vec<Vec<usize>> = s
+        .lines()
+        .enumerate()
+        .map(|(y, line)| {
+            line.chars()
+                .enumerate()
+                .map(|(x, c)| match c {
+                    'S' => {
+                        pos = (x, y);
+                        0
+                    }
+                    'E' => {
+                        dest = (x, y);
+                        25
+                    }
+                    _ => c as usize - 'a' as usize,
+                })
+                .collect()
+        })
         .collect();
 
-    reachability[s.pos.1][s.pos.0] = Some(0);
+    (
+        pos,
+        dest,
+        HeightMap {
+            height: map.len(),
+            width: map[0].len(),
+            map,
+        },
+    )
+}
 
-    let mut todo = vec![s.pos];
+fn solve(start: Pos, end: Pos, map: &HeightMap) -> usize {
+    let mut reachability: Vec<Vec<Option<usize>>> = vec![vec![None; map.width]; map.height];
+
+    reachability[start.1][start.0] = Some(0);
+
+    let mut todo = vec![start];
 
     while todo.len() > 0 {
         let p = todo.pop().unwrap();
         let s1 = reachability[p.1][p.0].unwrap();
-        for n in s.neighbors(p) {
-            if s.height(n) <= s.height(p) + 1 {
+        for n in map.neighbors(p) {
+            if map.height(n) <= map.height(p) + 1 {
                 match reachability[n.1][n.0] {
                     None => {
                         reachability[n.1][n.0] = Some(s1 + 1);
@@ -107,7 +99,7 @@ fn solve(s: &State) -> usize {
         }
     }
 
-    reachability[s.dest.1][s.dest.0].unwrap()
+    reachability[end.1][end.0].unwrap()
 }
 
 #[test]
@@ -118,9 +110,7 @@ accszExk
 acctuvwj
 abdefghi";
 
-    let state = State {
-        pos: (0, 0),
-        dest: (5, 2),
+    let map = HeightMap {
         map: vec![
             vec![0, 0, 1, 16, 15, 14, 13, 12],
             vec![0, 1, 2, 17, 24, 23, 23, 11],
@@ -132,6 +122,6 @@ abdefghi";
         height: 5,
     };
 
-    assert_eq!(state, s.parse().unwrap());
-    assert_eq!(31, solve(&state));
+    assert_eq!(((0, 0), (5, 2), map.clone()), parse(s));
+    assert_eq!(31, solve((0, 0), (5, 2), &map));
 }
