@@ -4,8 +4,8 @@ use nom::{
     bytes::complete::tag,
     character::complete::{digit1, newline},
     combinator::map,
-    multi::separated_list0,
-    sequence::{delimited, separated_pair},
+    multi::{many1, separated_list0},
+    sequence::delimited,
     IResult,
 };
 
@@ -23,12 +23,8 @@ fn p_packet(s: &str) -> IResult<&str, Packet> {
     )(s)
 }
 
-fn p_packet_pair(s: &str) -> IResult<&str, (Packet, Packet)> {
-    separated_pair(p_packet, newline, p_packet)(s)
-}
-
-fn p_all(s: &str) -> IResult<&str, Vec<(Packet, Packet)>> {
-    separated_list0(tag("\n\n"), p_packet_pair)(s)
+fn p_all(s: &str) -> IResult<&str, Vec<Packet>> {
+    separated_list0(many1(newline), p_packet)(s)
 }
 
 #[test]
@@ -86,10 +82,10 @@ fn test_parse() {
     let r = p_all(s);
     assert!(r.is_ok());
     let (_, pairs) = r.unwrap();
-    assert_eq!(pairs.len(), 8);
+    assert_eq!(pairs.len(), 16);
 }
 
-pub fn parse(s: &str) -> Vec<(Packet, Packet)> {
+pub fn parse(s: &str) -> Vec<Packet> {
     p_all(s).unwrap().1
 }
 
