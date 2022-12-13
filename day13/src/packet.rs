@@ -33,7 +33,7 @@ fn compare_vec(xs: &Vec<Packet>, ys: &Vec<Packet>) -> Ordering {
 }
 
 #[test]
-fn test_is_less() {
+fn test_ordering() {
     use crate::parse::parse_packet;
 
     assert!(Packet::Int(2) < Packet::Int(3));
@@ -49,6 +49,51 @@ fn test_is_less() {
     assert!(parse_packet("[[[]]]") > parse_packet("[[]]"));
     assert!(
         parse_packet("[1,[2,[3,[4,[5,6,7]]]],8,9]") > parse_packet("[1,[2,[3,[4,[5,6,0]]]],8,9]")
+    );
+
+    let mut packets = vec![
+        parse_packet("[1,1,3,1,1]"),
+        parse_packet("[1,1,5,1,1]"),
+        parse_packet("[[1],[2,3,4]]"),
+        parse_packet("[[1],4]"),
+        parse_packet("[9]"),
+        parse_packet("[[8,7,6]]"),
+        parse_packet("[[4,4],4,4]"),
+        parse_packet("[[4,4],4,4,4]"),
+        parse_packet("[7,7,7,7]"),
+        parse_packet("[7,7,7]"),
+        parse_packet("[]"),
+        parse_packet("[3]"),
+        parse_packet("[[[]]]"),
+        parse_packet("[[]]"),
+        parse_packet("[1,[2,[3,[4,[5,6,7]]]],8,9]"),
+        parse_packet("[1,[2,[3,[4,[5,6,0]]]],8,9]"),
+    ];
+
+    packets.sort();
+
+    assert_eq!(
+        packets,
+        vec![
+            parse_packet("[]"),
+            parse_packet("[[]]"),
+            parse_packet("[[[]]]"),
+            parse_packet("[1,1,3,1,1]"),
+            parse_packet("[1,1,5,1,1]"),
+            parse_packet("[[1],[2,3,4]]"),
+            parse_packet("[1,[2,[3,[4,[5,6,0]]]],8,9]"),
+            parse_packet("[1,[2,[3,[4,[5,6,7]]]],8,9]"),
+            parse_packet("[[1],4]"),
+            // parse_packet("[[2]]"),
+            parse_packet("[3]"),
+            parse_packet("[[4,4],4,4]"),
+            parse_packet("[[4,4],4,4,4]"),
+            // parse_packet("[[6]]"),
+            parse_packet("[7,7,7]"),
+            parse_packet("[7,7,7,7]"),
+            parse_packet("[[8,7,6]]"),
+            parse_packet("[9]"),
+        ]
     );
 }
 

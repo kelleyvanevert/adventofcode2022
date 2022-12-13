@@ -6,11 +6,31 @@ use std::fs;
 use packet::Packet;
 use parse::parse;
 
+use crate::parse::parse_packet;
+
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
 
     let pairs = parse(&filecontents);
     println!("Solution: {}", solve(&pairs));
+
+    let mut all = pairs
+        .iter()
+        .flat_map(|pair| [&pair.0, &pair.1])
+        .collect::<Vec<&Packet>>();
+
+    let div1 = parse_packet("[[2]]");
+    let div2 = parse_packet("[[6]]");
+
+    all.push(&div1);
+    all.push(&div2);
+
+    all.sort();
+
+    let i1 = all.iter().enumerate().find(|p| **p.1 == div1).unwrap().0;
+    let i2 = all.iter().enumerate().find(|p| **p.1 == div2).unwrap().0;
+
+    println!("Decoder key: {}", (i1 + 1) * (i2 + 1));
 }
 
 fn solve(pairs: &Vec<(Packet, Packet)>) -> usize {
