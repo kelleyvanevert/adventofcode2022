@@ -3,7 +3,7 @@ pub mod parse;
 
 use std::fs;
 
-use packet::{is_less, Packet};
+use packet::Packet;
 use parse::parse;
 
 fn main() {
@@ -17,15 +17,7 @@ fn solve(pairs: &Vec<(Packet, Packet)>) -> usize {
     pairs
         .iter()
         .enumerate()
-        .map(
-            |(i, pair)| {
-                if is_less(&pair.0, &pair.1) {
-                    i + 1
-                } else {
-                    0
-                }
-            },
-        )
+        .map(|(i, pair)| if pair.0 < pair.1 { i + 1 } else { 0 })
         .sum()
 }
 
