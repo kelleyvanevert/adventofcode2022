@@ -53,6 +53,11 @@ impl CaveBlock {
     fn drop_grain_of_sand(&mut self) -> Option<Pos> {
         let mut at = Pos(500, 0);
 
+        if self.data.get(&at).is_some() {
+            // blocked
+            return None;
+        }
+
         let ymax = self.data.keys().map(|p| p.1).max().unwrap();
 
         'fall: loop {
@@ -85,6 +90,17 @@ impl CaveBlock {
         }
 
         num
+    }
+
+    pub fn drop_grains_until_hole_blocked(&mut self) -> usize {
+        let floor = self.data.keys().map(|p| p.1).max().unwrap() + 2;
+
+        println!("floor is at {}", floor);
+        for x in (500 - floor - 10)..(500 + floor + 10) {
+            self.data.insert(Pos(x, floor), '_');
+        }
+
+        self.drop_grains_until_done()
     }
 }
 
@@ -142,4 +158,15 @@ fn test_dropping_grains_of_sand() {
     let mut c2 = cave_block.clone();
 
     assert_eq!(c2.drop_grains_until_done(), 24);
+}
+
+#[test]
+fn test_dropping_grains_of_sand_v2() {
+    let mut cave_block = parse(
+        "498,4 -> 498,6 -> 496,6,
+503,4 -> 502,4 -> 502,9 -> 494,9
+",
+    );
+
+    assert_eq!(cave_block.drop_grains_until_hole_blocked(), 93);
 }
