@@ -71,3 +71,5 @@ See https://adventofcode.com/2022
   - `<iter>.position(<predicate>)`
   - `PartialOrd`, `Ord`
   - Putting `use crate::{whatever}` imports inside the test function keeps the linter happy :)
+
+- **Day 14.** The bad news is that it's taking me longer every day to solve. The good news is that I'm still having a lot of fun doing so :)
