@@ -47,6 +47,7 @@ fn test_parse_rock_structure() {
 #[derive(Debug, PartialEq, Clone)]
 pub struct CaveBlock {
     data: HashMap<Pos, char>,
+    ymax: i32,
 }
 
 impl CaveBlock {
@@ -58,10 +59,8 @@ impl CaveBlock {
             return None;
         }
 
-        let ymax = self.data.keys().map(|p| p.1).max().unwrap();
-
         'fall: loop {
-            if at.1 >= ymax {
+            if at.1 >= self.ymax {
                 // flowing out
                 return None;
             }
@@ -93,12 +92,12 @@ impl CaveBlock {
     }
 
     pub fn drop_grains_until_hole_blocked(&mut self) -> usize {
-        let floor = self.data.keys().map(|p| p.1).max().unwrap() + 2;
+        let floor = self.ymax + 2;
 
-        println!("floor is at {}", floor);
         for x in (500 - floor - 10)..(500 + floor + 10) {
             self.data.insert(Pos(x, floor), '_');
         }
+        self.ymax += 2;
 
         self.drop_grains_until_done()
     }
@@ -125,7 +124,10 @@ pub fn parse(s: &str) -> CaveBlock {
         }
     }
 
-    CaveBlock { data }
+    CaveBlock {
+        ymax: data.keys().map(|p| p.1).max().unwrap(),
+        data,
+    }
 }
 
 #[test]
