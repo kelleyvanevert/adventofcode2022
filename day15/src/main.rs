@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use regex::Regex;
 use std::{collections::HashSet, fs, ops::RangeInclusive, time::Instant};
 
@@ -216,7 +217,8 @@ impl Grid {
     fn find_beacon(&self, xspan: Span, yspan: Span) -> Option<(Pos, u64)> {
         yspan
             .into_iter()
-            .find_map(|y| self.check_row_v2(y, xspan))
+            .into_par_iter()
+            .find_map_any(|y| self.check_row_v2(y, xspan))
             .map(|beacon| (beacon, beacon.x as u64 * 4_000_000 + beacon.y as u64))
     }
 }
