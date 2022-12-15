@@ -1,12 +1,16 @@
 use regex::Regex;
-use std::{collections::HashSet, fs, ops::RangeInclusive};
+use std::{collections::HashSet, fs, ops::RangeInclusive, time::Instant};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
     let grid = parse(&filecontents);
 
+    let t0 = Instant::now();
     println!("Defo not: {}", grid.check_row_v1(2_000_000));
+    println!(" - took {:?}", t0.elapsed());
+    // 0ms
 
+    let t0 = Instant::now();
     println!(
         "Found beacon: {:?}",
         grid.find_beacon(
@@ -20,6 +24,8 @@ fn main() {
             },
         )
     );
+    println!(" - took {:?}", t0.elapsed());
+    // ±11s
 }
 
 #[derive(Clone, Copy, Hash, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -38,9 +44,11 @@ impl Pos {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-struct Grid {
-    measurements: Vec<(Pos, Pos, i32)>,
+#[derive(Clone, Copy, Hash, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct Diamond {
+    // aka manhattan circle
+    center: Pos,
+    radius: i32,
 }
 
 #[derive(Clone, Copy, Hash, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -130,16 +138,28 @@ impl Spans {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+struct Grid {
+    measurements: Vec<(Pos, Pos, i32)>,
+    diamonds: Vec<Diamond>,
+}
+
 impl Grid {
     fn new() -> Self {
         Self {
             measurements: vec![],
+            diamonds: vec![],
         }
     }
 
     fn measure(&mut self, sensor: Pos, beacon: Pos) {
         self.measurements
             .push((sensor, beacon, sensor.manhattan(beacon)));
+
+        self.diamonds.push(Diamond {
+            center: sensor,
+            radius: sensor.manhattan(beacon),
+        });
     }
 
     fn check_row_v1(&self, y: i32) -> usize {
