@@ -2,6 +2,11 @@
 
 See https://adventofcode.com/2022
 
+## Links
+
+- Leaderboard competitor with Python solutions that I've looked at when I got stuck: https://github.com/ivankra/advent-of-code
+- Amazing, this person wrote poems for each day :D Really puts my little diary attempt to shame 😅: https://github.com/HiggstonRainbird/AoC-2022
+
 ## Diary
 
 - **Day 1.** Ah, it's not that hard! :)
