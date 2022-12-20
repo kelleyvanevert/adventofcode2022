@@ -52,7 +52,7 @@ See https://adventofcode.com/2022
   2. Fighting with the borrow checker over mutating other monkeys while looping over the monkeys in each round. There must be a more elegant way of doing this, but, I was already spending so much time on today's challenge, that I just went with whatever worked :P
   3. The bonus. I first tried the "silly thing" and just rewrote it to use `BigInt`s, but, that wouldn't have worked anyway, because the numbers get unmanageably large and the code would not stop running. The trick is that we're working modulo `n`, where I first (incorrectly) set `n` to each respective monkey's divisibility check number, but then later, after taking a break to help my roommate buy stuff for Christmas dinner, figured that it should be all these monkeys' numbers multiplied by each other, because the items move hands and therefore shouldn't lose information in between.
 
-  TODO:
+  To learn:
 
   - Learn better error handling, i.e. no more `type Err = ();`
   - Learn how to do the mutable iterator & vector updates thing (point 2) in idiomatic Rust
@@ -99,3 +99,11 @@ See https://adventofcode.com/2022
   Fun!
 
   Is it optimal tho? Probably not..
+
+- **Day 19.**
+
+  _TODO_
+
+- **Day 20.**
+
+  Wow, I spent waaaay too much time thinking in loops about indices, getting nowhere.. Finally, I went online to look at other people's solutions, and it turned I totally overengineered it also. I had a really complicated function `move_index_by` that would deal with the weird (but not as weird as I though) modulo arithmetic of the target index of a moving tile. I got totally caught up in the test case that the `-2` at position `2` would loop around to the last position, instead of going to position `0`. But, I overlooked the fact that it's really only just a case of formatting, because it's a loop. I should have seen this earlier, and then just colocate the numbers and their original indices in the same vector, and also just not worry about the performance hit of always looping through the vector to find the next number.
