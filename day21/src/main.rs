@@ -1,31 +1,81 @@
+use either::Either::{self, Left, Right};
 use regex::Regex;
 use std::{collections::HashMap, fs};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
-    println!("Num: {}", solve(&filecontents));
+    let nodes = parse(&filecontents);
+
+    let root = build(&nodes, "root", false);
+    println!("Num: {}", root.eval());
+
+    let humn = build_humn_expr(&nodes);
+    println!("You should yell: {}", humn.eval());
 }
 
-#[derive(Debug, PartialEq)]
-enum Expr<'a> {
+#[derive(Debug, PartialEq, Clone)]
+enum Expr {
+    Humn,
     Num(u64),
-    Op(char, &'a str, &'a str),
+    Op(char, Box<Expr>, Box<Expr>),
 }
 
-impl<'a> Expr<'a> {
-    fn eval(&self, nodes: &HashMap<&str, Expr>) -> u64 {
+impl Expr {
+    fn eval(&self) -> u64 {
         match &self {
-            Expr::Num(n) => *n,
-            Expr::Op('+', a, b) => nodes[a].eval(&nodes) + nodes[b].eval(&nodes),
-            Expr::Op('-', a, b) => nodes[a].eval(&nodes) - nodes[b].eval(&nodes),
-            Expr::Op('*', a, b) => nodes[a].eval(&nodes) * nodes[b].eval(&nodes),
-            Expr::Op('/', a, b) => nodes[a].eval(&nodes) / nodes[b].eval(&nodes),
-            Expr::Op(..) => unreachable!(),
+            Self::Num(n) => *n,
+            Self::Op('+', a, b) => a.eval() + b.eval(),
+            Self::Op('-', a, b) => a.eval() - b.eval(),
+            Self::Op('*', a, b) => a.eval() * b.eval(),
+            Self::Op('/', a, b) => a.eval() / b.eval(),
+            _ => unreachable!(),
+        }
+    }
+
+    fn contains_humn(&self) -> bool {
+        match &self {
+            Self::Humn => true,
+            Self::Num(_) => false,
+            Self::Op(_, a, b) => a.contains_humn() || b.contains_humn(),
+        }
+    }
+
+    /// Recursively peel layers off of self, while building the other side of the equation, then return the other side
+    fn simplify(self, other: Expr) -> Expr {
+        match self {
+            Self::Humn => other,
+            Self::Op('/', a, b) if a.contains_humn() => {
+                return a.simplify(Expr::Op('*', Box::new(other), b));
+            }
+            Self::Op('/', a, b) => {
+                return b.simplify(Expr::Op('/', a, Box::new(other)));
+            }
+            Self::Op('*', a, b) if a.contains_humn() => {
+                return a.simplify(Expr::Op('/', Box::new(other), b));
+            }
+            Self::Op('*', a, b) => {
+                return b.simplify(Expr::Op('/', Box::new(other), a));
+            }
+            Self::Op('+', a, b) if a.contains_humn() => {
+                return a.simplify(Expr::Op('-', Box::new(other), b));
+            }
+            Self::Op('+', a, b) => {
+                return b.simplify(Expr::Op('-', Box::new(other), a));
+            }
+            Self::Op('-', a, b) if a.contains_humn() => {
+                return a.simplify(Expr::Op('+', Box::new(other), b));
+            }
+            Self::Op('-', a, b) => {
+                return b.simplify(Expr::Op('-', a, Box::new(other)));
+            }
+            _ => unreachable!(),
         }
     }
 }
 
-fn solve(s: &str) -> u64 {
+type ParsedNodes<'a> = HashMap<&'a str, Either<u64, (char, &'a str, &'a str)>>;
+
+fn parse<'a>(s: &'a str) -> ParsedNodes<'a> {
     let expr_re = Regex::new(r"^([a-z]+): (?:([0-9]+)|([a-z]+) (.) ([a-z]+))$").unwrap();
 
     let mut nodes = HashMap::new();
@@ -36,16 +86,46 @@ fn solve(s: &str) -> u64 {
 
         if let Some(m) = m.get(2) {
             let num = m.as_str().parse::<u64>().unwrap();
-            nodes.insert(name, Expr::Num(num));
+            nodes.insert(name, Left(num));
         } else {
             let op = m.get(4).unwrap().as_str().chars().next().unwrap();
             let le = m.get(3).unwrap().as_str();
             let ri = m.get(5).unwrap().as_str();
-            nodes.insert(name, Expr::Op(op, le, ri));
+            nodes.insert(name, Right((op, le, ri)));
         }
     }
 
-    nodes["root"].eval(&nodes)
+    nodes
+}
+
+fn build<'a>(nodes: &ParsedNodes<'a>, name: &'a str, recognize_humn: bool) -> Expr {
+    if recognize_humn && name == "humn" {
+        return Expr::Humn;
+    }
+
+    match nodes[name] {
+        Left(n) => Expr::Num(n),
+        Right((op, le, ri)) => Expr::Op(
+            op,
+            Box::new(build(&nodes, le, recognize_humn)),
+            Box::new(build(&nodes, ri, recognize_humn)),
+        ),
+    }
+}
+
+fn build_humn_expr<'a>(nodes: &ParsedNodes<'a>) -> Expr {
+    let Right((_, a, b)) = nodes["root"] else {
+        unreachable!()
+    };
+
+    let mut a = build(nodes, a, true);
+    let mut b = build(nodes, b, true);
+
+    if !a.contains_humn() {
+        (b, a) = (a, b);
+    }
+
+    a.simplify(b)
 }
 
 #[test]
@@ -66,5 +146,11 @@ lgvd: ljgn * ptdq
 drzm: hmdt - zczc
 hmdt: 32";
 
-    assert_eq!(solve(s), 152);
+    let nodes = parse(&s);
+
+    let root = build(&nodes, "root", false);
+    assert_eq!(root.eval(), 152);
+
+    let humn = build_humn_expr(&nodes);
+    assert_eq!(humn.eval(), 301);
 }
