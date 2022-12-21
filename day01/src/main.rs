@@ -1,36 +1,28 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
-use std::{cmp, vec};
+use std::{time::Instant, vec};
 
 fn main() {
-    let mut max = vec![0, 0, 0];
-    let mut acc = 0;
+    let filecontents = include_str!("../input.txt");
 
-    if let Ok(lines) = read_lines("./input.txt") {
-        for line in lines {
-            if let Ok(line) = line {
-                if line == "" {
-                    max = keep_sorted_desc(max, acc);
-                    acc = 0;
-                } else if let Ok(num) = line.parse::<i32>() {
-                    acc += num;
-                }
-            }
-        }
-    }
+    time(|| {
+        let parse_i32 = |s: &str| s.parse::<i32>().unwrap();
 
-    max = keep_sorted_desc(max, acc);
+        let max_three = filecontents
+            .split("\n\n")
+            .map(|group| group.lines().map(parse_i32).sum())
+            .fold(vec![0, 0, 0], keep_sorted_desc);
 
-    println!("max: {:?}, total: {}", max, max.iter().sum::<i32>());
+        println!("Max three: {:?}", max_three);
+        println!("Their sum: {}", max_three.iter().sum::<i32>());
+    });
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+fn time<F>(mut f: F)
 where
-    P: AsRef<Path>,
+    F: FnMut(),
 {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+    let t0 = Instant::now();
+    f();
+    println!("  took {:?}", t0.elapsed());
 }
 
 fn keep_sorted_desc(mut max: Vec<i32>, num: i32) -> Vec<i32> {
