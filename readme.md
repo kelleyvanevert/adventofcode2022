@@ -116,3 +116,9 @@ See https://adventofcode.com/2022
   The bonus part calculation took .. more than 5 hours XD (I left it on overnight.) What's also funny/new to me to see, is that it's all due to the size of the numbers involved in the multiplication. There's a very simple 10-factor scale between the number of digits (past 4) in the decryption key and the total calculation time. I guess this is super obvious, but, first time I've seen it so strikingly.
 
 - **Day 21.** Fun and not too complicated :)
+
+- **Day 22.**
+
+  Learned:
+
+  - `vec.resize()` to pad
