@@ -119,6 +119,8 @@ See https://adventofcode.com/2022
 
 - **Day 22.**
 
-  Learned:
+  Part 1: fine. Part 2: seemed like a cute generalization at first, but I totally overlooked how hard it was :P After a failed attempt at a misguided attempt at an algorithm that would "glue" the cube together along the single seam, obtained by traversing the boundary of the 2d pattern (silly me for thinking it's that simple 😅), I "gave up" and just hard-coded the cube edges, after which I turned to Reddit and saw that I was not the only one. But I couldn't stop myself, later, from spending suuper long trying to get a folding algorithm to work, and, in the end, I did it :) The code is hella ugly tho, due to the incremental solving process, haha :P
 
-  - `vec.resize()` to pad
+  Also, here's my "MANDATORY" cube :D
+
+  ![](./day22/cube.jpg)
