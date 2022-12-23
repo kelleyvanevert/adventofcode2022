@@ -1,5 +1,9 @@
-use std::io::{self, Write};
-use std::{collections::HashMap, fs, time::Instant};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+    io::{self, Write},
+    time::Instant,
+};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
@@ -32,17 +36,17 @@ type Pos = (i32, i32);
 
 #[derive(Debug, PartialEq, Clone)]
 struct Grid {
-    elves: Vec<Pos>,
+    elves: HashSet<Pos>,
 }
 
 impl Grid {
     fn new(s: &str) -> Self {
-        let mut elves = vec![];
+        let mut elves = HashSet::new();
 
         for (y, line) in s.lines().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 if c == '#' {
-                    elves.push((x as i32, y as i32));
+                    elves.insert((x as i32, y as i32));
                 }
             }
         }
@@ -116,27 +120,34 @@ impl Grid {
         let proposed = self
             .elves
             .iter()
-            .map(|&elf| self.propose_elf_move(elf, step_no))
-            .collect::<Vec<Option<Pos>>>();
+            .map(|&elf| (elf, self.propose_elf_move(elf, step_no)))
+            .collect::<Vec<(Pos, Option<Pos>)>>();
 
-        if proposed.iter().all(|p| p.is_none()) {
+        if proposed.iter().all(|(_, p)| p.is_none()) {
             return true;
         }
 
-        let mut counts = HashMap::new();
-        for pos in proposed.iter() {
-            if let Some(pos) = pos {
-                counts.entry(pos).and_modify(|c| *c += 1).or_insert(1);
-            }
-        }
+        let counts =
+            proposed
+                .iter()
+                .filter_map(|&(_, p)| p)
+                .fold(HashMap::new(), |mut m, proposed| {
+                    m.entry(proposed).and_modify(|c| *c += 1).or_insert(1);
+                    m
+                });
 
-        for (i, &pos) in proposed.iter().enumerate() {
-            if let Some(pos) = pos {
-                if *counts.get(&pos).unwrap_or(&1) < 2 {
-                    self.elves[i] = pos;
+        self.elves = proposed
+            .iter()
+            .map(|&(curr, proposed)| {
+                if let Some(proposed) = proposed {
+                    if *counts.get(&proposed).unwrap_or(&1) < 2 {
+                        return proposed;
+                    }
                 }
-            }
-        }
+
+                curr
+            })
+            .collect();
 
         return false;
     }
