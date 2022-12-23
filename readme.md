@@ -124,3 +124,9 @@ See https://adventofcode.com/2022
   Also, here's my "MANDATORY" cube :D
 
   ![](./day22/cube.jpg)
+
+- **Day 23.**
+
+  Not every day is hard! This one, I almost implemented in a single pass without debugging :)
+  
+  _ALSO, I found out that I totally forgot to use the `--release` flag when running on the actual input, on the more compute-intensive days. Turns out, for example.. that day 16 might take ±20min when running in debug mode, but only **138s** when running without all the debug tooling set up! (This is still not enough to simulate all 1000000000000 blocks in day 17 of course, but still :P)_
