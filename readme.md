@@ -89,11 +89,15 @@ See https://adventofcode.com/2022
 
   Haha, oh and later, I used `rayon` for the first time, to parallelize the brute-force search. So easy to add, and it takes the time down from ±11s to ±2.5s on my machine (8 cores).
 
+  _Update: actually, with `--release`, the bonus part takes ±200ms with Rayon, and ±800ms without._
+
 - **Days 16 and 17.**
 
   Both days 16 and 17 were very hard! Day 16 was the first I didn't solve on the day itself, and I haven't been able to solve the bonus parts of both days yet :P
 
   Day 16 seems to require an exhaustive search, at least naively. Which I've implemented, possible not optimally, and it took my machine about 30 minutes to solve. But definitely I won't be able to solve the bonus part this way. Later, I got the idea to simplify the tunnel network a bit, removing the zero-flow-rate valves (except for the starting point `AA`). This reduces the time from 30 min to 20 min, which isn't a meaningful improvement, but, I think I might be on to something with the simplification of the network. Maybe with some extra thinking, I can replace the search algorithm with an algorithm that simplifies/contracts the network step-wise, until it ends up with a single node, or something. This would mean linear (or maybe log) time, instead of combinatorial.
+
+  _Update: actually, with `--release`, it takes around 2m._
 
   Day 17 seemed to just be a simple simulation, but then too, the bonus is intractable, so there must be some way to phrase it differently, that I haven't though of yet.
 
@@ -103,7 +107,7 @@ See https://adventofcode.com/2022
 
   Fun!
 
-  Is it optimal tho? Probably not..
+  Is it optimal tho? Probably not.. But, with `--release` it only takes ±25ms, so that's fiine :)
 
 - **Day 19.**
 
@@ -115,11 +119,13 @@ See https://adventofcode.com/2022
 
   The bonus part calculation took .. more than 5 hours XD (I left it on overnight.) What's also funny/new to me to see, is that it's all due to the size of the numbers involved in the multiplication. There's a very simple 10-factor scale between the number of digits (past 4) in the decryption key and the total calculation time. I guess this is super obvious, but, first time I've seen it so strikingly.
 
+  _Update: actually, with `--release`, the bonus part takes around 1h 45m._
+
 - **Day 21.** Fun and not too complicated :)
 
 - **Day 22.**
 
-  Part 1: fine. Part 2: seemed like a cute generalization at first, but I totally overlooked how hard it was :P After a failed attempt at a misguided attempt at an algorithm that would "glue" the cube together along the single seam, obtained by traversing the boundary of the 2d pattern (silly me for thinking it's that simple 😅), I "gave up" and just hard-coded the cube edges, after which I turned to Reddit and saw that I was not the only one. But I couldn't stop myself, later, from spending suuper long trying to get a folding algorithm to work, and, in the end, I did it :) The code is hella ugly tho, due to the incremental solving process, haha :P
+  Part 1: fine. Part 2: seemed like a cute generalization at first, but I totally overlooked how hard it was :P After a misguided attempt at an algorithm that would "glue" the cube together along the single seam, obtained by traversing the boundary of the 2d pattern (silly me for thinking it's that simple 😅), I gave up and just hard-coded the cube edges, after which I turned to Reddit and saw that I was not the only one. But I couldn't stop myself, later, from spending suuper long trying to get a folding algorithm to work, and, in the end, I did it :) With a naive DFS, whack rotation code, and keeping track of the faces' original coordinates along the way :) The code is hella ugly, due to the incremental solving process, haha, but I'm leaving it as is now :P At least it's fast, about 2ms.
 
   Also, here's my "MANDATORY" cube :D
 
@@ -128,5 +134,5 @@ See https://adventofcode.com/2022
 - **Day 23.**
 
   Not every day is hard! This one, I almost implemented in a single pass without debugging :)
-  
+
   _ALSO, I found out that I totally forgot to use the `--release` flag when running on the actual input, on the more compute-intensive days. Turns out, for example.. that day 16 might take ±20min when running in debug mode, but only **138s** when running without all the debug tooling set up! (This is still not enough to simulate all 1000000000000 blocks in day 17 of course, but still :P)_
