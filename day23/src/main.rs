@@ -34,6 +34,16 @@ where
 
 type Pos = (i32, i32);
 
+struct GetProposal<'a> {
+    pub get_proposal: &'a dyn Fn() -> Option<Pos>,
+}
+
+impl<'a> GetProposal<'a> {
+    fn new(get_proposal: &'a dyn Fn() -> Option<Pos>) -> Self {
+        Self { get_proposal }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 struct Grid {
     elves: HashSet<Pos>,
@@ -75,42 +85,50 @@ impl Grid {
             return None;
         }
 
-        let mut proposals = vec![];
-
-        proposals.push(
+        let maybe_move_north = move || {
             if self.empty_at(x, y - 1) && self.empty_at(x - 1, y - 1) && self.empty_at(x + 1, y - 1)
             {
-                Some((x, y - 1)) // north
+                Some((x, y - 1))
             } else {
                 None
-            },
-        );
-        proposals.push(
+            }
+        };
+
+        let maybe_move_south = move || {
             if self.empty_at(x, y + 1) && self.empty_at(x - 1, y + 1) && self.empty_at(x + 1, y + 1)
             {
-                Some((x, y + 1)) // south
+                Some((x, y + 1))
             } else {
                 None
-            },
-        );
-        proposals.push(
+            }
+        };
+
+        let maybe_move_west = move || {
             if self.empty_at(x - 1, y) && self.empty_at(x - 1, y + 1) && self.empty_at(x - 1, y - 1)
             {
-                Some((x - 1, y)) // west
+                Some((x - 1, y))
             } else {
                 None
-            },
-        );
-        proposals.push(
+            }
+        };
+
+        let maybe_move_east = move || {
             if self.empty_at(x + 1, y) && self.empty_at(x + 1, y + 1) && self.empty_at(x + 1, y - 1)
             {
-                Some((x + 1, y)) // east
+                Some((x + 1, y))
             } else {
                 None
-            },
-        );
+            }
+        };
 
-        (0..4).find_map(|i| proposals[(step_no + i) % 4])
+        let proposals: Vec<GetProposal> = vec![
+            GetProposal::new(&maybe_move_north),
+            GetProposal::new(&maybe_move_south),
+            GetProposal::new(&maybe_move_west),
+            GetProposal::new(&maybe_move_east),
+        ];
+
+        (0..4).find_map(|i| (proposals[(step_no + i) % 4].get_proposal)())
     }
 
     fn step(&mut self, step_no: usize) -> bool {
