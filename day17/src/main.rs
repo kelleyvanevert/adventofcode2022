@@ -1,24 +1,65 @@
-use std::{collections::HashSet, fs};
+use std::io::{self, Write};
+use std::{collections::HashSet, fs, iter::Cycle, time::Instant, vec::IntoIter};
 
 fn main() {
-    let mut jet_pattern = fs::read_to_string("./input.txt")
+    time(|| {
+        println!();
+        println!("First part");
+        let mut rock_pattern = rocks().into_iter().cycle();
+        let mut chamber = Chamber::new();
+
+        simulate(
+            &mut chamber,
+            &mut get_jet_pattern(),
+            &mut rock_pattern,
+            2022,
+        );
+
+        let height = chamber.top() + 1;
+        println!("height reached: {}", height);
+        assert_eq!(height, 3127)
+    });
+
+    time(|| {
+        println!();
+        println!("Second part");
+        let mut rock_pattern = rocks().into_iter().cycle();
+        let mut chamber = Chamber::new();
+
+        simulate(
+            &mut chamber,
+            &mut get_jet_pattern(),
+            &mut rock_pattern,
+            1_000_000_000_000,
+        );
+
+        let height = chamber.top() + 1;
+        println!("height reached: {}", height);
+    });
+
+    println!();
+}
+
+fn get_jet_pattern() -> Cycle<IntoIter<i64>> {
+    fs::read_to_string("./input.txt")
         .unwrap()
         .lines()
         .next()
         .unwrap()
         .chars()
         .map(|c| if c == '>' { 1 } else { -1 })
-        .collect::<Vec<i32>>()
+        .collect::<Vec<i64>>()
         .into_iter()
-        .cycle();
+        .cycle()
+}
 
-    let mut rock_pattern = rocks().into_iter().cycle();
-
-    let mut chamber = Chamber::new();
-
-    simulate(&mut chamber, &mut jet_pattern, &mut rock_pattern, 2022);
-
-    println!("Height reached: {}", chamber.top() + 1);
+fn time<F>(mut f: F)
+where
+    F: FnMut(),
+{
+    let t0 = Instant::now();
+    f();
+    println!("  took {:?}", t0.elapsed());
 }
 
 fn simulate<J, R>(
@@ -27,10 +68,16 @@ fn simulate<J, R>(
     rock_pattern: &mut R,
     num_rocks: usize,
 ) where
-    J: Iterator<Item = i32>,
+    J: Iterator<Item = i64>,
     R: Iterator<Item = Rock>,
 {
-    for _i in 0..num_rocks {
+    for i in 0..num_rocks {
+        if i % 10_000 == 0 {
+            print!("{} ", i);
+            io::stdout().flush().unwrap();
+            chamber.optimize();
+        }
+
         let mut rock = rock_pattern.next().unwrap();
 
         rock.place_in_start_position(&chamber);
@@ -67,12 +114,17 @@ impl Chamber {
         }
     }
 
-    fn top(&self) -> i32 {
+    fn top(&self) -> i64 {
         if self.occupied.is_empty() {
             -1
         } else {
             self.occupied.iter().map(|p| p.1).max().unwrap()
         }
+    }
+
+    fn optimize(&mut self) {
+        let top = self.top();
+        self.occupied.retain(|&(_, y)| y >= top - 50);
     }
 
     // Has a bug that only surfaces with the actual data, but, too lazy to fix
@@ -108,7 +160,7 @@ impl Chamber {
     }
 }
 
-type Pos = (i32, i32);
+type Pos = (i64, i64);
 
 #[derive(Clone, Debug, PartialEq)]
 struct Rock {
@@ -121,7 +173,7 @@ impl Rock {
     }
 
     #[allow(unused)]
-    fn top(&self) -> i32 {
+    fn top(&self) -> i64 {
         self.blocks.iter().map(|p| p.1).max().unwrap()
     }
 
@@ -133,7 +185,7 @@ impl Rock {
         }
     }
 
-    fn try_move(&mut self, chamber: &Chamber, (dx, dy): (i32, i32)) -> bool {
+    fn try_move(&mut self, chamber: &Chamber, (dx, dy): (i64, i64)) -> bool {
         let mut updated = vec![];
 
         for &p in &self.blocks {
@@ -174,7 +226,7 @@ fn test() {
     let jet_pattern = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"
         .chars()
         .map(|c| if c == '>' { 1 } else { -1 })
-        .collect::<Vec<i32>>();
+        .collect::<Vec<i64>>();
 
     {
         let chamber = Chamber::new();
@@ -216,11 +268,25 @@ fn test() {
     }
 
     {
-        let mut jet_pattern = jet_pattern.into_iter().cycle();
+        let mut jet_pattern = jet_pattern.clone().into_iter().cycle();
         let mut rock_pattern = rocks().into_iter().cycle();
         let mut chamber = Chamber::new();
 
         simulate(&mut chamber, &mut jet_pattern, &mut rock_pattern, 2022);
         assert_eq!(chamber.top() + 1, 3068);
+    }
+
+    {
+        let mut jet_pattern = jet_pattern.into_iter().cycle();
+        let mut rock_pattern = rocks().into_iter().cycle();
+        let mut chamber = Chamber::new();
+
+        simulate(
+            &mut chamber,
+            &mut jet_pattern,
+            &mut rock_pattern,
+            1000000000000,
+        );
+        assert_eq!(chamber.top() + 1, 1514285714288);
     }
 }
