@@ -6,6 +6,9 @@ See https://adventofcode.com/2022
 
 - Leaderboard competitor with Python solutions that I've looked at when I got stuck: https://github.com/ivankra/advent-of-code
 - Amazing, this person wrote poems for each day :D Really puts my little diary attempt to shame 😅: https://github.com/HiggstonRainbird/AoC-2022
+- Friends also participating:
+  - [Stijn](https://github.com/AuguB/Rust_Advent_Of_Code_2022)
+  - [Auke](https://github.com/Fadarrizz/advent-of-code)
 
 ## Diary
 
