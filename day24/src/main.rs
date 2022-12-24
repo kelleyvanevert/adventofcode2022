@@ -1,60 +1,65 @@
-use std::{collections::HashSet, fs};
+use std::{collections::HashSet, fs, time::Instant};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
 
-    println!("Steps: {}", solve(&filecontents));
+    time(|| {
+        let steps = solve(&filecontents, false);
+        println!("Steps: {}", steps);
+        assert_eq!(steps, 290);
+    });
+
+    time(|| {
+        let steps = solve(&filecontents, true);
+        println!("Steps, but circling back for forgotten snacks: {}", steps);
+        assert_eq!(steps, 842);
+    });
 }
 
-fn solve(s: &str) -> usize {
+fn time<F>(mut f: F)
+where
+    F: FnMut(),
+{
+    let t0 = Instant::now();
+    f();
+    println!("  took {:?}", t0.elapsed());
+}
+
+fn solve(s: &str, circle_back_for_forgotten_snacks: bool) -> usize {
     type Grid = Vec<Vec<char>>;
     type Pos = (usize, usize);
 
-    let start: Grid = s
-        .lines()
-        .map(|line| {
-            line.chars()
-                .map(|c| if c == '.' { vec![] } else { vec![c] })
+    let lines = s.lines().collect::<Vec<&str>>();
+    let lines = &lines[1..lines.len() - 1];
+    let height = lines.len();
+    let width = lines[0].len() - 2;
+
+    let grid: Grid = lines
+        .iter()
+        .map(|&line| {
+            line[1..(width + 1)]
+                .chars()
+                .map(|c| vec![c; if c == '.' { 0 } else { 1 }])
         })
         .flatten()
         .collect();
 
-    let height = s.lines().count();
-    let width = start.len() / height;
+    let wrap = |(x, y): Pos| (x % width, y % height);
+    let index = |(x, y): Pos| y * width + x;
+    let empty_at = |grid: &Grid, (x, y): Pos| grid[index((x, y))].is_empty();
 
-    let is_border = |(x, y): Pos| x == 0 || x == width - 1 || y == 0 || y == height - 1;
-    let index = |mut x, mut y| {
-        if y == 0 {
-            y = height - 2;
-        }
-        if y == height - 1 {
-            y = 1;
-        }
-        if x == 0 {
-            x = width - 2;
-        }
-        if x == width - 1 {
-            x = 1;
-        }
-        y * width + x
-    };
-
-    let blow = |grid: &Grid| -> Grid {
+    let blow = |grid: Grid| -> Grid {
         let mut next = vec![vec![]; width * height];
 
         for y in 0..height {
             for x in 0..width {
-                if is_border((x, y)) {
-                    next[y * width + x] = vec!['#'];
-                } else {
-                    for c in &grid[y * width + x] {
-                        match c {
-                            '>' => next[index(x + 1, y)].push('>'),
-                            'v' => next[index(x, y + 1)].push('v'),
-                            '<' => next[index(x - 1, y)].push('<'),
-                            '^' => next[index(x, y - 1)].push('^'),
-                            _ => (),
-                        }
+                for c in &grid[index((x, y))] {
+                    match c {
+                        '>' => next[index(wrap((x + 1, y)))].push('>'),
+                        'v' => next[index(wrap((x, y + 1)))].push('v'),
+                        '<' => next[index(wrap((x + width - 1, y)))].push('<'),
+                        '^' => next[index(wrap((x, y + height - 1)))].push('^'),
+                        _ => (),
                     }
                 }
             }
@@ -63,68 +68,61 @@ fn solve(s: &str) -> usize {
         next
     };
 
-    #[allow(unused)]
-    let print = |grid: &Grid| -> String {
-        (0..height)
-            .map(|y| {
-                (0..width)
-                    .map(|x| {
-                        let cs = &grid[y * width + x];
-                        if cs.len() == 0 {
-                            ".".to_string()
-                        } else if *cs == vec!['#'] {
-                            "#".to_string()
-                        } else if cs.len() == 1 {
-                            format!("{}", cs[0])
-                        } else {
-                            format!("{}", cs.len())
-                        }
-                    })
-                    .collect::<Vec<String>>()
-                    .join("")
-            })
-            .collect::<Vec<String>>()
-            .join("\n")
-    };
+    let find_shortest = |mut grid: Grid, start: Pos, end: Pos| -> (Grid, usize) {
+        let mut positions = HashSet::new();
 
-    let mut curr = start;
-    let mut positions = HashSet::from([(1, 0)]);
+        for minute in 1.. {
+            grid = blow(grid);
 
-    for minute in 0.. {
-        curr = blow(&curr);
-        let mut next_positions = HashSet::from([(1, 0)]);
-
-        for &(x, y) in &positions {
-            if (x, y) == (width - 2, height - 2) {
-                return minute + 1;
+            let mut next_positions = HashSet::new();
+            if empty_at(&grid, start) {
+                // start!
+                next_positions.insert(start);
             }
 
-            // stay
-            if curr[y * width + x].len() == 0 {
-                next_positions.insert((x, y));
+            for &(x, y) in &positions {
+                if (x, y) == end {
+                    return (grid, minute);
+                }
+
+                // stay
+                if empty_at(&grid, (x, y)) {
+                    next_positions.insert((x, y));
+                }
+                // move right
+                if x < width - 1 && empty_at(&grid, (x + 1, y)) {
+                    next_positions.insert((x + 1, y));
+                }
+                // move down
+                if y < height - 1 && empty_at(&grid, (x, y + 1)) {
+                    next_positions.insert((x, y + 1));
+                }
+                // move left
+                if x > 0 && empty_at(&grid, (x - 1, y)) {
+                    next_positions.insert((x - 1, y));
+                }
+                // move up
+                if y > 0 && empty_at(&grid, (x, y - 1)) {
+                    next_positions.insert((x, y - 1));
+                }
             }
-            // move right
-            if curr[y * width + x + 1].len() == 0 {
-                next_positions.insert((x + 1, y));
-            }
-            // move down
-            if curr[(y + 1) * width + x].len() == 0 {
-                next_positions.insert((x, y + 1));
-            }
-            // move left
-            if curr[y * width + x - 1].len() == 0 {
-                next_positions.insert((x - 1, y));
-            }
-            // move up
-            if y > 0 && curr[(y - 1) * width + x].len() == 0 {
-                next_positions.insert((x, y - 1));
-            }
+
+            positions = next_positions;
         }
 
-        positions = next_positions;
+        unreachable!()
+    };
+
+    let (grid, mut steps) = find_shortest(grid, (0, 0), (width - 1, height - 1));
+
+    if circle_back_for_forgotten_snacks {
+        let (grid, steps_2) = find_shortest(grid, (width - 1, height - 1), (0, 0));
+        let (_, steps_3) = find_shortest(grid, (0, 0), (width - 1, height - 1));
+
+        steps += steps_2 + steps_3;
     }
 
-    unreachable!()
+    steps
 }
 
 #[test]
@@ -137,5 +135,6 @@ fn test_all() {
 ######.#
 ";
 
-    assert_eq!(solve(s), 18);
+    assert_eq!(solve(s, false), 18);
+    assert_eq!(solve(s, true), 54);
 }
