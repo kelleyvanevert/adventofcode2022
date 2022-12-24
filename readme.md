@@ -104,6 +104,8 @@ See https://adventofcode.com/2022
 
   Day 17 seemed to just be a simple simulation, but then too, the bonus is intractable, so there must be some way to phrase it differently, that I haven't though of yet.
 
+  _Update (on day 24): I've solved the bonus part now, too. I knew it had to be something with a repeating pattern, but I couldn't figure out how to do that. (Using LCM of 5 and 10091 doesn't just work, because the rock placement pattern might be different, etc.) But then, reading Reddit, someone described how to do it: take the relative heights of the top blocks + the next rock and jet index as a hash. Smart! Using that technique, both parts now run in a constant time of just around 5ms, which is basically just the overhead of getting to the repeating part, and the last bit of work afterwards. Nice! :)_
+
 - **Day 18.**
 
   Pfew, here again is at least something I can solve without too much effort :P Although the bonus part did challenge my algorithmic thinking, and it took a few takes (due to conceptual mistakes) to get it right.
@@ -139,3 +141,9 @@ See https://adventofcode.com/2022
   Not every day is hard! This one, I almost implemented in a single pass without debugging :)
 
   _ALSO, I found out that I totally forgot to use the `--release` flag when running on the actual input, on the more compute-intensive days. Turns out, for example.. that day 16 might take ±20min when running in debug mode, but only **138s** when running without all the debug tooling set up! (This is still not enough to simulate all 1000000000000 blocks in day 17 of course, but still :P)_
+
+- **Day 24.**
+
+  This is a fun twist of the same kind kind of breadth-first "flooding" search algorithm as on day 12 (finding the length of the shortest route across a grid with certain moving constraints). Fun!
+
+  To see how it would work out, I decided to write most of the code in a single function scope, with a bunch of small helper closures etc., and keeping all the relevant pieces of data in local variables instead of assigning them to a rather arbitrarily named struct. I kind of like the flexibility of this approach, because immediately moving to conceptually named structs can hinder the "problem-solving" / "scripting" mode I'm working in when solving an algorithmic challenge. (Of course, the rigidity and semantic clarity of using aptly structs etc. is better when building larger software, but, that's now what I'm doing with the Advent of Code :))
