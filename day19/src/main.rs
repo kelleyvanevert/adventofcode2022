@@ -2,7 +2,6 @@ use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 use std::{cmp::Reverse, collections::BinaryHeap, fmt::Debug, fs, time::Instant};
 
-const TIME: usize = 24;
 const DEBUG: bool = false;
 
 fn main() {
@@ -13,7 +12,7 @@ fn main() {
         let total_quality = blueprints
             .par_iter()
             .map(|(id, blueprint)| {
-                let num_geodes = find_max(blueprint);
+                let num_geodes = find_max(blueprint, 24);
                 let quality = id * num_geodes;
                 println!(
                     "Blueprint {} can make max. {} geodes, quality: {}",
@@ -25,6 +24,20 @@ fn main() {
 
         println!("Total quality (checksum): {}", total_quality);
         assert_eq!(total_quality, 988);
+    });
+
+    time(|| {
+        let geodes_multiplied = blueprints[0..3]
+            .par_iter()
+            .map(|(id, blueprint)| {
+                let num_geodes = find_max(blueprint, 32);
+                println!("Blueprint {} can make max. {} geodes", id, num_geodes);
+                num_geodes
+            })
+            .reduce(|| 1, |a, b| a * b);
+
+        println!("Total geodes, multiplied: {}", geodes_multiplied);
+        assert_eq!(geodes_multiplied, 8580);
     });
 }
 
@@ -82,7 +95,7 @@ impl Debug for State {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!(
             "State({}) [{},{},{},{}] collected [{},{},{},{}]",
-            TIME - self.time_left,
+            self.time_left,
             self.ore_robots,
             self.clay_robots,
             self.obs_robots,
@@ -96,9 +109,9 @@ impl Debug for State {
 }
 
 impl State {
-    fn new() -> Self {
+    fn new(time_available: usize) -> Self {
         let mut me = Self {
-            time_left: TIME,
+            time_left: time_available,
 
             ore_robots: 1,
             clay_robots: 0,
@@ -121,7 +134,7 @@ impl State {
     fn log(&mut self) {
         if DEBUG {
             self.trace.push([
-                TIME - self.time_left,
+                self.time_left,
                 self.ore_robots,
                 self.clay_robots,
                 self.obs_robots,
@@ -199,8 +212,8 @@ impl State {
         next
     }
 
-    /// Should be able to harvest at least this number of geodes
-    fn min_score(&self) -> usize {
+    /// A heuristic for how good this branch is, in terms of how many geodes it'll be able to produce, or something.. I tried more complex (read: more reasonable) things, but this simplified heuristic apparently works best? :P Oh well, that's the idea of a heuristic, I guess.. A carefully fine-tuned but kinda weird thing.
+    fn heuristic(&self) -> usize {
         let clay_final = self.clay + self.clay_robots * self.time_left;
         let obs_final = self.obs + self.obs_robots * self.time_left;
         let geode_final = self.geode + self.geode_robots * self.time_left;
@@ -228,11 +241,11 @@ fn parse(s: &str) -> Vec<(usize, Blueprint)> {
 }
 
 /// I'm going for the BFS + beam search solution that someone suggested on Reddit.
-fn find_max(blueprint: &Blueprint) -> usize {
+fn find_max(blueprint: &Blueprint, time_available: usize) -> usize {
     let max_beam_width = 500_000;
     let mut beam = BinaryHeap::new();
-    let init = State::new();
-    beam.push(Reverse(init.min_score()));
+    let init = State::new(time_available);
+    beam.push(Reverse(init.heuristic()));
 
     let mut consider = vec![init];
     let mut max = 0;
@@ -255,7 +268,7 @@ fn find_max(blueprint: &Blueprint) -> usize {
         let mut new_consider = vec![];
         for state in consider {
             let curr_min = beam.peek().unwrap().0;
-            if state.min_score() < curr_min {
+            if state.heuristic() < curr_min {
                 continue;
             }
 
@@ -265,7 +278,7 @@ fn find_max(blueprint: &Blueprint) -> usize {
                     max_trace = s.trace.clone();
                 }
 
-                let my_min = s.min_score();
+                let my_min = s.heuristic();
                 if beam.len() >= max_beam_width {
                     if my_min < curr_min {
                         // all of the 1000 best are at least `min`, and I'm no better
@@ -322,6 +335,6 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
         }
     );
 
-    assert_eq!(find_max(&blueprints[0].1), 9);
-    assert_eq!(find_max(&blueprints[1].1), 12);
+    assert_eq!(find_max(&blueprints[0].1, 24), 9);
+    assert_eq!(find_max(&blueprints[1].1, 24), 12);
 }
