@@ -147,3 +147,9 @@ See https://adventofcode.com/2022
   This is a fun twist of the same kind kind of breadth-first "flooding" search algorithm as on day 12 (finding the length of the shortest route across a grid with certain moving constraints). Fun!
 
   To see how it would work out, I decided to write most of the code in a single function scope, with a bunch of small helper closures etc., and keeping all the relevant pieces of data in local variables instead of assigning them to a rather arbitrarily named struct. I kind of like the flexibility of this approach, because immediately moving to conceptually named structs can hinder the "problem-solving" / "scripting" mode I'm working in when solving an algorithmic challenge. (Of course, the rigidity and semantic clarity of using aptly structs etc. is better when building larger software, but, that's now what I'm doing with the Advent of Code :))
+
+- **Day 25.**
+
+  Tricky eclectic base conversation logic :P I'm almost certain that my code can be optimized both in performance as well as in readability, but, it's the quickest one I could come up with.
+
+  But .. it seems I need all of the previous' days stars to unlock today's bonus challenge? Or is there no bonus challenge for the last day? 🤔
