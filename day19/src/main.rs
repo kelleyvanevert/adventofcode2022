@@ -1,3 +1,4 @@
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 use std::{cmp::Reverse, collections::BinaryHeap, fmt::Debug, fs, time::Instant};
 
@@ -8,41 +9,22 @@ fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
     let blueprints = parse(&filecontents);
 
-    let mut results = vec![];
-
     time(|| {
-        for (id, blueprint) in blueprints.iter().enumerate() {
-            time(|| {
-                let geodes = find_max(blueprint);
+        let total_quality = blueprints
+            .par_iter()
+            .map(|(id, blueprint)| {
+                let num_geodes = find_max(blueprint);
+                let quality = id * num_geodes;
                 println!(
-                    "Blueprint {} makes {} geodes, quality: {}",
-                    id + 1,
-                    geodes,
-                    (id + 1) * geodes
+                    "Blueprint {} can make max. {} geodes, quality: {}",
+                    id, num_geodes, quality
                 );
-                results.push(geodes);
-            });
-        }
+                quality
+            })
+            .sum::<usize>();
 
-        println!(
-            "Total quality: {}",
-            results
-                .iter()
-                .enumerate()
-                .map(|(id, &geodes)| {
-                    println!(
-                        "Blueprint {}: {} (quality {})",
-                        id + 1,
-                        geodes,
-                        (id + 1) * geodes
-                    );
-                    (id + 1) * geodes
-                })
-                .sum::<usize>()
-        );
-
-        // should be more than 942
-        // maybe 988 ??
+        println!("Total quality (checksum): {}", total_quality);
+        assert_eq!(total_quality, 988);
     });
 }
 
@@ -227,18 +209,22 @@ impl State {
     }
 }
 
-fn parse(s: &str) -> Vec<Blueprint> {
+fn parse(s: &str) -> Vec<(usize, Blueprint)> {
     let r_num = Regex::new(r"[0-9]+").unwrap();
 
     s.lines()
-        .map(|line| {
-            r_num
+        .enumerate()
+        .map(|(i, line)| {
+            let id = i + 1;
+            let blueprint: Blueprint = r_num
                 .find_iter(line.split_once(": ").unwrap().1)
                 .map(|m| m.as_str().parse::<usize>().unwrap())
                 .collect::<Vec<usize>>()
-                .into()
+                .into();
+
+            (id, blueprint)
         })
-        .collect::<Vec<Blueprint>>()
+        .collect::<Vec<(usize, Blueprint)>>()
 }
 
 /// I'm going for the BFS + beam search solution that someone suggested on Reddit.
@@ -325,7 +311,7 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
 
     assert_eq!(blueprints.len(), 2);
     assert_eq!(
-        blueprints[0],
+        blueprints[0].1,
         Blueprint {
             ore_for_ore_robot: 4,
             ore_for_clay_robot: 2,
@@ -336,6 +322,6 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
         }
     );
 
-    assert_eq!(find_max(&blueprints[0]), 9);
-    assert_eq!(find_max(&blueprints[1]), 12);
+    assert_eq!(find_max(&blueprints[0].1), 9);
+    assert_eq!(find_max(&blueprints[1].1), 12);
 }
