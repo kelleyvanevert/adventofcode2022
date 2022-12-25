@@ -116,7 +116,16 @@ See https://adventofcode.com/2022
 
 - **Day 19.**
 
-  _TODO_
+  Solved this one on day 25, because .. wow I had so much trouble with the search algorithm on day 16, that I kinda just decided (after some initial investigation) this one was going to be so hard that I might just do it some subsequent day. And then today (the 25th), I found out that I had to solve _all_ of the previous days' first parts, to unlock the 25's bonus part. Haha, Eric, what? 😅 So then I went to the Reddit megathread for some algorithmic guidance, and someone using Rust said they wrote their solution with a breadth-first "beam" search, and that sounded like the nicest solution to me, in terms of simplicity mostly. After getting the algorithm to work reasonably (aka, produce results for a single blueprint in under 30 seconds), I spent quite some time on:
+
+  - Solving all the off-by-one errors. (First decide to build a robot, then harvest resources, timing, etc.)
+  - Getting the heuristic to work. Interestingly, the more complicated/realistic I tried to make it, the worse it would seem to work. And in the end, I just went with this questionable equation:
+
+    ```rust
+    geode_final * 1000 + obs_final * 10 + clay_final
+    ```
+
+    (Where `geode_final` is the current amount of geodes + the time left times the amount of geode robots, and similar for the other two.) Like, how does this perform better than including more logic?! 😂 But it's hella fast. Runs in a bunch of milliseconds.
 
 - **Day 20.**
 

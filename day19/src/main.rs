@@ -242,7 +242,7 @@ fn parse(s: &str) -> Vec<(usize, Blueprint)> {
 
 /// I'm going for the BFS + beam search solution that someone suggested on Reddit.
 fn find_max(blueprint: &Blueprint, time_available: usize) -> usize {
-    let max_beam_width = 500_000;
+    let max_beam_width = 1000;
     let mut beam = BinaryHeap::new();
     let init = State::new(time_available);
     beam.push(Reverse(init.heuristic()));
