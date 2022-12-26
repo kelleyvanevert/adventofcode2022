@@ -56,9 +56,9 @@ fn parse<'a>(s: &'a str) -> Data<'a> {
 
 struct State<'a> {
     at: &'a str,
+    // el_at: &'a str,
     time_left: usize,
     valves: HashMap<&'a str, Option<usize>>,
-    visited: HashMap<&'a str, usize>,
     total: usize,
 }
 
@@ -84,39 +84,31 @@ impl<'a> State<'a> {
             at: "AA",
             time_left: 30,
             valves: HashMap::new(),
-            visited: HashMap::from([("AA", 0)]),
             total: 0,
         }
     }
 
     fn open_valve(&self, data: &Data<'a>) -> State<'a> {
-        let mut visited = self.visited.clone();
         let mut valves = self.valves.clone();
 
         let pressure_to_be_released = data[self.at].0 * (self.time_left - 1);
         let total = self.total + pressure_to_be_released;
 
         valves.insert(self.at, Some(pressure_to_be_released));
-        visited.insert(self.at, total);
 
         Self {
             at: self.at,
             time_left: self.time_left - 1,
             valves,
-            visited,
             total,
         }
     }
 
     fn goto(&self, dist: usize, dest: &'a str) -> State<'a> {
-        let mut visited = self.visited.clone();
-        visited.insert(dest, self.total);
-
         Self {
             at: dest,
             time_left: self.time_left.saturating_sub(dist),
             valves: self.valves.clone(),
-            visited,
             total: self.total,
         }
     }
@@ -144,19 +136,7 @@ impl<'a> State<'a> {
 
         for (&dest, &dist) in &data[self.at].1 {
             // [x] prevent unnecessary move back
-
-            match self.visited.get(dest) {
-                None => {
-                    // not visited before -> defo try
-                    next.push(self.goto(dist, dest));
-                }
-                Some(&total) => {
-                    // only try if
-                    if total < self.total {
-                        next.push(self.goto(dist, dest));
-                    }
-                }
-            }
+            next.push(self.goto(dist, dest));
         }
 
         next
