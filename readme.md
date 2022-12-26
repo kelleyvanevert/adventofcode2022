@@ -102,9 +102,11 @@ See https://adventofcode.com/2022
 
   _Update: actually, with `--release`, it takes around 2m._
 
-  Day 17 seemed to just be a simple simulation, but then too, the bonus is intractable, so there must be some way to phrase it differently, that I haven't though of yet.
+  Day 17 seemed to just be a simple simulation, but then too, the bonus is intractable, so there must be some way to phrase it differently, that I haven't thought of yet.
 
   _Update (on day 24): I've solved the bonus part now, too. I knew it had to be something with a repeating pattern, but I couldn't figure out how to do that. (Using LCM of 5 and 10091 doesn't just work, because the rock placement pattern might be different, etc.) But then, reading Reddit, someone described how to do it: take the relative heights of the top blocks + the next rock and jet index as a hash. Smart! Using that technique, both parts now run in a constant time of just around 5ms, which is basically just the overhead of getting to the repeating part, and the last bit of work afterwards. Nice! :)_
+
+  _Update (on day 25): I've now also solved the bonus part of day 16, after rewriting it to, just like 19, also work with a breadth-first beam search. Way simpler, way more performant._
 
 - **Day 18.**
 
@@ -129,7 +131,7 @@ See https://adventofcode.com/2022
 
 - **Day 20.**
 
-  Wow, I spent waaaay too much time thinking in loops about indices, getting nowhere.. Finally, I went online to look at other people's solutions, and it turned I totally overengineered it also. I had a really complicated function `move_index_by` that would deal with the weird (but not as weird as I though) modulo arithmetic of the target index of a moving tile. I got totally caught up in the test case that the `-2` at position `2` would loop around to the last position, instead of going to position `0`. But, I overlooked the fact that it's really only just a case of formatting, because it's a loop. I should have seen this earlier, and then just colocate the numbers and their original indices in the same vector, and also just not worry about the performance hit of always looping through the vector to find the next number.
+  Wow, I spent waaaay too much time thinking in loops about indices, getting nowhere.. Finally, I went online to look at other people's solutions, and it turned out I totally overengineered it also. I had a really complicated function `move_index_by` that would deal with the weird (but not as weird as I thought) modulo arithmetic of the target index of a moving tile. I got totally caught up in the test case that the `-2` at position `2` would loop around to the last position, instead of going to position `0`. But, I overlooked the fact that it's really only just a case of formatting, because it's a loop. I should have seen this earlier, and then just colocate the numbers and their original indices in the same vector, and also just not worry about the performance hit of always looping through the vector to find the next number.
 
   The bonus part calculation took .. more than 5 hours XD (I left it on overnight.) What's also funny/new to me to see, is that it's all due to the size of the numbers involved in the multiplication. There's a very simple 10-factor scale between the number of digits (past 4) in the decryption key and the total calculation time. I guess this is super obvious, but, first time I've seen it so strikingly.
 
@@ -162,3 +164,5 @@ See https://adventofcode.com/2022
   Tricky eclectic base conversation logic :P I'm almost certain that my code can be optimized both in performance as well as in readability, but, it's the quickest one I could come up with.
 
   But .. it seems I need all of the previous' days stars to unlock today's bonus challenge? Or is there no bonus challenge for the last day? 🤔
+
+  _Update: went back to solve day 19, and then also rewrite day 16 and solve it's bonus part, and now that I've solved all the days and their bonuses, I get to see the lovely hot air balloons and the easter eggs and stuff :D What a treat. I've had so much fun with the Advent of Code, thanks Eric! ❤️_
