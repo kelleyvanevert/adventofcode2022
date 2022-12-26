@@ -26,7 +26,7 @@ where
     println!("  took {:?}", t0.elapsed());
 }
 
-type Data<'a> = HashMap<&'a str, (usize, HashMap<&'a str, usize>)>;
+type Data<'a> = HashMap<&'a str, (usize, Vec<&'a str>)>;
 
 fn parse<'a>(s: &'a str) -> Data<'a> {
     let re =
@@ -41,12 +41,7 @@ fn parse<'a>(s: &'a str) -> Data<'a> {
             m.get(1).unwrap().as_str(),
             (
                 m[2].parse::<usize>().unwrap(),
-                m.get(3)
-                    .unwrap()
-                    .as_str()
-                    .split(", ")
-                    .map(|dest| (dest, 1))
-                    .collect(),
+                m.get(3).unwrap().as_str().split(", ").collect(),
             ),
         );
     }
@@ -104,10 +99,10 @@ impl<'a> State<'a> {
         }
     }
 
-    fn goto(&self, dist: usize, dest: &'a str) -> State<'a> {
+    fn goto(&self, dest: &'a str) -> State<'a> {
         Self {
             at: dest,
-            time_left: self.time_left.saturating_sub(dist),
+            time_left: self.time_left.saturating_sub(1),
             valves: self.valves.clone(),
             total: self.total,
         }
@@ -130,13 +125,11 @@ impl<'a> State<'a> {
         }
 
         if !self.valves.contains_key(self.at) && data[self.at].0 > 0 {
-            // [x] only if total increases
             next.push(self.open_valve(data));
         }
 
-        for (&dest, &dist) in &data[self.at].1 {
-            // [x] prevent unnecessary move back
-            next.push(self.goto(dist, dest));
+        for &dest in &data[self.at].1 {
+            next.push(self.goto(dest));
         }
 
         next
@@ -207,19 +200,16 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     assert_eq!(
         data,
         HashMap::from([
-            ("AA", (0, HashMap::from([("DD", 1,), ("II", 1), ("BB", 1)]))),
-            ("BB", (13, HashMap::from([("CC", 1,), ("AA", 1)]))),
-            ("CC", (2, HashMap::from([("DD", 1,), ("BB", 1)]))),
-            (
-                "DD",
-                (20, HashMap::from([("CC", 1,), ("AA", 1), ("EE", 1)]))
-            ),
-            ("EE", (3, HashMap::from([("FF", 1,), ("DD", 1)]))),
-            ("FF", (0, HashMap::from([("EE", 1,), ("GG", 1)]))),
-            ("GG", (0, HashMap::from([("FF", 1,), ("HH", 1)]))),
-            ("HH", (22, HashMap::from([("GG", 1,)]))),
-            ("II", (0, HashMap::from([("AA", 1,), ("JJ", 1)]))),
-            ("JJ", (21, HashMap::from([("II", 1,)]))),
+            ("AA", (0, vec!["DD", "II", "BB"])),
+            ("BB", (13, vec!["CC", "AA"])),
+            ("CC", (2, vec!["DD", "BB"])),
+            ("DD", (20, vec!["CC", "AA", "EE"])),
+            ("EE", (3, vec!["FF", "DD"])),
+            ("FF", (0, vec!["EE", "GG"])),
+            ("GG", (0, vec!["FF", "HH"])),
+            ("HH", (22, vec!["GG"])),
+            ("II", (0, vec!["AA", "JJ"])),
+            ("JJ", (21, vec!["II"])),
         ])
     );
 
