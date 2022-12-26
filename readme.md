@@ -4,7 +4,8 @@ See https://adventofcode.com/2022
 
 ## Links
 
-- Leaderboard competitor with Python solutions that I've looked at when I got stuck: https://github.com/ivankra/advent-of-code
+- BFS + beam search idea that I used for solving day 16 and day 19 after getting stuck: https://www.reddit.com/r/adventofcode/comments/zn6k1l/comment/j0zy23s
+- Python solutions that I looked at a few times after getting stuck: https://github.com/ivankra/advent-of-code
 - Amazing, this person wrote poems for each day :D Really puts my little diary attempt to shame 😅: https://github.com/HiggstonRainbird/AoC-2022
 - Friends also participating:
   - [Stijn](https://github.com/AuguB/Rust_Advent_Of_Code_2022)
@@ -44,7 +45,7 @@ See https://adventofcode.com/2022
 
 - **Day 8.**
 
-  - Wasn't too hard, but I did get into some finnicky trouble with `take_while` trying to get the bonus to work. The way the puzzle is written, it's more like `take_until(_and_including)`, which wasn't exactly what the crate `take-until` gives. And then I made a small attempt at creating my own `TakeUntil` trait + impl, before settling for quicker approach of just writing a very specific `fn count_until`.
+  - Wasn't too hard, but I did get into some finnicky trouble with `take_while` trying to get the bonus part to work. The way the puzzle is written, it's more like `take_until(_and_including)`, which wasn't exactly what the crate `take-until` gives. And then I made a small attempt at creating my own `TakeUntil` trait + impl, before settling for quicker approach of just writing a very specific `fn count_until`.
   - Also the performance won't be optimal, but the immediate fix is to decide in which order to check the lines of vision for visibility (instead of always checking up, down, left, right).
   - Learned:
     - Didn't actually learn today, but was reminded again of how taking a `mut p` where `P: FnMut` is more general than just `p: fn`. Not actually necessary even, but, I just took it from the `TakeWhile` implementation, and now `count_until` could also choose to be a closure that mutates.
