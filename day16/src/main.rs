@@ -1,21 +1,29 @@
 use regex::Regex;
-use std::{cmp, collections::HashMap, fmt::Debug, fs, time::Instant};
+use std::{
+    cmp::Reverse,
+    collections::{BinaryHeap, HashMap},
+    fmt::Debug,
+    fs,
+    time::Instant,
+};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
 
-    let mut data = parse(&filecontents);
+    time(|| {
+        let data = parse(&filecontents);
+        let max = search(&data);
+        println!("Max: {}", max);
+    });
+}
 
-    println!("Before simplification: {:?}", data);
-
-    simplify(&mut data);
-
-    println!("After simplification: {:?}", data);
-
+fn time<F>(mut f: F)
+where
+    F: FnMut(),
+{
     let t0 = Instant::now();
-    let max = State::new().find_best(&data, "".to_string());
-    println!("Max: {}", max);
-    println!(" took: {:?}", t0.elapsed());
+    f();
+    println!("  took {:?}", t0.elapsed());
 }
 
 type Data<'a> = HashMap<&'a str, (usize, HashMap<&'a str, usize>)>;
@@ -44,35 +52,6 @@ fn parse<'a>(s: &'a str) -> Data<'a> {
     }
 
     data
-}
-
-fn simplify<'a>(data: &mut Data<'a>) {
-    while let Some((&a, _)) = data
-        .iter()
-        .find(|&(&a, (flow_rate, _))| *flow_rate == 0 && a != "AA")
-    {
-        let (_, destinations) = data.remove(a).unwrap();
-        // println!("Found node to remove: {} -- {:?}", a, destinations);
-
-        for (&b, &dist_to_b) in &destinations {
-            if !data.contains_key(b) {
-                panic!("Weird: data does not contain {}", b);
-            }
-            let (_, tunnels) = data.get_mut(b).unwrap();
-            // println!("Rewrite {} from {:?}", b, tunnels);
-
-            tunnels.retain(|&name, _| name != a);
-
-            for (&c, &dist_to_c) in &destinations {
-                if b != c {
-                    tunnels.insert(c, dist_to_b + dist_to_c);
-                }
-                // updated_dests.insert((d + dist, dest));
-            }
-
-            // println!("  to {:?}", tunnels);
-        }
-    }
 }
 
 struct State<'a> {
@@ -142,45 +121,92 @@ impl<'a> State<'a> {
         }
     }
 
-    fn find_best(&self, data: &Data<'a>, depth: String) -> usize {
-        let subdepth = format!("  {}", depth);
-        let mut max = self.total;
+    fn heuristic(&self) -> usize {
+        self.total_to_be_released()
+    }
 
-        // println!(
-        //     "{}At {} time {} total {}",
-        //     depth, self.at, self.time_left, self.total
-        // );
+    fn total_to_be_released(&self) -> usize {
+        self.valves.iter().map(|v| v.1.unwrap_or(0)).sum()
+    }
 
-        if self.time_left > 0 {
-            if !self.valves.contains_key(self.at) && data[self.at].0 > 0 {
-                // [x] only if total increases
-                max = cmp::max(max, self.open_valve(data).find_best(data, subdepth.clone()));
-            }
+    fn next(&self, data: &Data<'a>) -> Vec<Self> {
+        let mut next = vec![];
 
-            for (&dest, &dist) in &data[self.at].1 {
-                // [x] prevent unnecessary move back
+        if self.time_left == 0 {
+            // no more time left!
+            return next;
+        }
 
-                match self.visited.get(dest) {
-                    None => {
-                        // not visited before -> defo try
-                        max =
-                            cmp::max(max, self.goto(dist, dest).find_best(data, subdepth.clone()));
-                    }
-                    Some(&total) => {
-                        // only try if
-                        if total < self.total {
-                            max = cmp::max(
-                                max,
-                                self.goto(dist, dest).find_best(data, subdepth.clone()),
-                            );
-                        }
+        if !self.valves.contains_key(self.at) && data[self.at].0 > 0 {
+            // [x] only if total increases
+            next.push(self.open_valve(data));
+        }
+
+        for (&dest, &dist) in &data[self.at].1 {
+            // [x] prevent unnecessary move back
+
+            match self.visited.get(dest) {
+                None => {
+                    // not visited before -> defo try
+                    next.push(self.goto(dist, dest));
+                }
+                Some(&total) => {
+                    // only try if
+                    if total < self.total {
+                        next.push(self.goto(dist, dest));
                     }
                 }
             }
         }
 
-        max
+        next
     }
+}
+
+fn search<'a>(data: &Data<'a>) -> usize {
+    let max_beam_width = 1000;
+    let mut beam = BinaryHeap::new();
+    let initial = State::new();
+    beam.push(Reverse(initial.heuristic()));
+
+    let mut consider = vec![initial];
+    let mut max = 0;
+
+    while consider.len() > 0 {
+        let mut new_consider = vec![];
+        for state in consider {
+            let curr_min = beam.peek().unwrap().0;
+            if state.heuristic() < curr_min {
+                continue;
+            }
+
+            for s in state.next(&data) {
+                if s.total_to_be_released() > max {
+                    max = s.total_to_be_released();
+                }
+
+                let my_min = s.heuristic();
+                if beam.len() >= max_beam_width {
+                    if my_min < curr_min {
+                        // all of the 1000 best are at least `min`, and I'm no better
+                        // -> discard this branch
+                    } else {
+                        beam.pop();
+                        beam.push(Reverse(my_min));
+                        new_consider.push(s);
+                    }
+                } else {
+                    // less than 1000 in beam, so add regardless of score
+                    beam.push(Reverse(my_min));
+                    new_consider.push(s);
+                }
+            }
+        }
+
+        consider = new_consider;
+    }
+
+    max
 }
 
 #[test]
@@ -196,7 +222,7 @@ Valve HH has flow rate=22; tunnel leads to valve GG
 Valve II has flow rate=0; tunnels lead to valves AA, JJ
 Valve JJ has flow rate=21; tunnel leads to valve II";
 
-    let mut data = parse(s);
+    let data = parse(s);
 
     assert_eq!(
         data,
@@ -217,20 +243,5 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
         ])
     );
 
-    simplify(&mut data);
-
-    assert_eq!(
-        data,
-        HashMap::from([
-            ("AA", (0, HashMap::from([("DD", 1), ("JJ", 2), ("BB", 1)]))),
-            ("BB", (13, HashMap::from([("CC", 1), ("AA", 1)]))),
-            ("CC", (2, HashMap::from([("DD", 1), ("BB", 1)]))),
-            ("DD", (20, HashMap::from([("CC", 1), ("AA", 1), ("EE", 1)]))),
-            ("EE", (3, HashMap::from([("HH", 3), ("DD", 1)]))),
-            ("HH", (22, HashMap::from([("EE", 3)]))),
-            ("JJ", (21, HashMap::from([("AA", 2)]))),
-        ])
-    );
-
-    assert_eq!(State::new().find_best(&data, "".to_string()), 1651);
+    assert_eq!(search(&data), 1651);
 }
