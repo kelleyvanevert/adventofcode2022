@@ -138,6 +138,8 @@ See https://adventofcode.com/2022
 
   _Update: actually, with `--release`, the bonus part takes around 1h 45m._
 
+  _Update (on day 26): ACTUALLY, I was just super stupid and it turns out the whole performance bottleneck was just due to the for-loop in the `moduleo` function (which makes sure that the modulo ends up above zero). Removing it, everything works in ±100ms. Silly me 😂_
+
 - **Day 21.** Fun and not too complicated :)
 
 - **Day 22.**

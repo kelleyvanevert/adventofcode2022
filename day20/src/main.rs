@@ -4,21 +4,30 @@ fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
     let data = parse(&filecontents);
 
-    let sum = solve(data.clone());
-    println!("Sum: {}", sum);
-    println!();
+    time(|| {
+        let sum = solve(data.clone());
+        println!("Sum: {}", sum);
+        assert_eq!(sum, 4151);
+    });
 
-    let t0 = Instant::now();
-    let sum = solve_v2(data.clone());
-    println!("Sum v2: {}", sum);
-    println!("  took: {:?}", t0.elapsed());
+    time(|| {
+        let sum = solve_v2(data.clone());
+        println!("Sum v2: {}", sum);
+        assert_eq!(sum, 7848878698663);
+    });
 }
 
-fn modulo(mut a: i64, m: i64) -> i64 {
-    while a < 0 {
-        a += m;
-    }
-    a % m
+fn time<F>(mut f: F)
+where
+    F: FnMut(),
+{
+    let t0 = Instant::now();
+    f();
+    println!("  took {:?}", t0.elapsed());
+}
+
+fn modulo(a: i64, m: i64) -> i64 {
+    ((a % m) + m) % m
 }
 
 fn parse(s: &str) -> Vec<(usize, i64)> {
@@ -57,15 +66,10 @@ const DECRYPT: i64 = 811589153;
 
 fn solve_v2(data: Vec<(usize, i64)>) -> i64 {
     let n = data.len();
-    println!("N = {}", n);
     let mut data = data.into_iter().map(|p| (p.0, DECRYPT * p.1)).collect();
 
-    for iteration in 1..=10 {
-        println!("Mix no {}...", iteration);
-        let t0 = Instant::now();
+    for _ in 1..=10 {
         data = mix(data);
-        println!("  took: {:?}", t0.elapsed());
-        // my estimate: 2000s = 30min, each, so 5h total
     }
 
     let i = data.iter().position(|&(_, n)| n == 0).unwrap();
@@ -85,6 +89,5 @@ fn test_all() {
 ";
 
     assert_eq!(solve(parse(s)), 3);
-
     assert_eq!(solve_v2(parse(s)), 1623178306);
 }
