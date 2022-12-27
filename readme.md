@@ -21,31 +21,36 @@ See https://adventofcode.com/2022
 
 | Day                           | Computer time            | Kelley time (rough retrospective estimates) |
 | ----------------------------- | ------------------------ | ------------------------------------------- |
-| 1 (Calorie Counting)          | _✨ instantaneous_       | < 20min                                     |
-| 2 (Rock Paper Scissors)       | _✨ instantaneous_       | < 30min                                     |
-| 3 (Rucksack Reorganization)   | _✨ instantaneous_       | < 30min                                     |
-| 4 (Camp Cleanup)              | _✨ instantaneous_       | < 30min                                     |
-| 5 (Supply Stacks)             | _✨ instantaneous_       | < 1.5h                                      |
-| 6 (Tuning Trouble)            | _✨ instantaneous_       | ±10min                                      |
-| 7 (No Space Left On Device)   | _✨ instantaneous_       | < 30min                                     |
-| 8 (Treetop Tree House)        | _✨ instantaneous_       | < 1h                                        |
-| 9 (Rope Bridge)               | _✨ instantaneous_       | < 20min                                     |
-| 10 (Cathode-Ray Tube)         | _✨ instantaneous_       | < 1h                                        |
-| 11 (Monkey in the Middle)     | _✨ instantaneous_       | ±2h                                         |
-| 12 (Hill Climbing Algorithm)  | _✨ instantaneous_       | ±1.5h                                       |
-| 13 (Distress Signal)          | _✨ instantaneous_       | ±1.5h                                       |
-| 14 (Regolith Reservoir)       | _✨ instantaneous_       | ±2h                                         |
-| 15 (Beacon Exclusion Zone)    | < 1s                     | ±3h                                         |
+| 1 (Calorie Counting)          | 🕳️ negative              | < 20min                                     |
+| 2 (Rock Paper Scissors)       | ✨ instantaneous         | < 30min                                     |
+| 3 (Rucksack Reorganization)   | ✨ instantaneous         | < 30min                                     |
+| 4 (Camp Cleanup)              | ✨ instantaneous         | < 30min                                     |
+| 5 (Supply Stacks)             | ✨ instantaneous         | < 1.5h                                      |
+| 6 (Tuning Trouble)            | 🕳️ negative              | ±10min                                      |
+| 7 (No Space Left On Device)   | ±2ms                     | < 30min                                     |
+| 8 (Treetop Tree House)        | ✨ instantaneous         | < 1h                                        |
+| 9 (Rope Bridge)               | ±2ms                     | < 20min                                     |
+| 10 (Cathode-Ray Tube)         | 🕳️ negative              | < 1h                                        |
+| 11 (Monkey in the Middle)     | ±20ms                    | ±2h                                         |
+| 12 (Hill Climbing Algorithm)  | ±2ms                     | ±1.5h                                       |
+| 13 (Distress Signal)          | ✨ instantaneous         | ±1.5h                                       |
+| 14 (Regolith Reservoir)       | ±120ms                   | ±2h                                         |
+| 15 (Beacon Exclusion Zone)    | ±160ms                   | ±3h                                         |
 | 16 (Proboscidea Volcanium)    | ±1.5s (down from ±30min) | ±1.5h and ±1h later                         |
 | 17 (Pyroclastic Flow)         | ±5ms                     | ±1h and ±1h later                           |
 | 18 (Boiling Boulders)         | ±40ms                    | ±2h                                         |
 | 19 (Not Enough Minerals)      | ±10ms                    | ±3h (on day 25)                             |
 | 20 (Grove Positioning System) | ±120ms (down from ±5h)   | ±3h                                         |
-| 21 (Monkey Math)              | _✨ instantaneous_       | ±1h                                         |
-| 22 (Monkey Map)               | _✨ instantaneous_       | 🫣 I'd rather not say                        |
+| 21 (Monkey Math)              | ±2ms                     | ±1h                                         |
+| 22 (Monkey Map)               | ±5ms                     | 🫣 I'd rather not say                        |
 | 23 (Unstable Diffusion)       | ±350ms                   | ±1h                                         |
 | 24 (Blizzard Basin)           | ±200ms                   | ±1.5h                                       |
-| 25 (Full of Hot Air)          | _✨ instantaneous_       | ±30min                                      |
+| 25 (Full of Hot Air)          | 🕳️ negative              | ±30min                                      |
+
+Legend:
+
+- ✨ instantaneous: < 1ms
+- 🕳️ negative: running the algorithm repeatedly actually produces time instead of consuming it
 
 ## Diary
 
