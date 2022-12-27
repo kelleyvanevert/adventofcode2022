@@ -1,4 +1,8 @@
-use std::{collections::HashSet, fs, time::Instant};
+use std::{
+    collections::{BinaryHeap, HashSet},
+    fs,
+    time::Instant,
+};
 
 fn main() {
     let filecontents = fs::read_to_string("./input.txt").unwrap();
@@ -91,7 +95,7 @@ fn solve(start: HashSet<Pos>, end: Pos, map: &HeightMap) -> usize {
         reachability[p.1][p.0] = Some(0);
     }
 
-    let mut todo = start.into_iter().collect::<Vec<Pos>>();
+    let mut todo = BinaryHeap::from_iter(start.into_iter());
 
     while todo.len() > 0 {
         let p = todo.pop().unwrap();
