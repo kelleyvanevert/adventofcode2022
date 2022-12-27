@@ -19,34 +19,33 @@ See https://adventofcode.com/2022
 
 ## Time estimates
 
-| Day | Computer time | Kelley time (rough retrospective estimates) |
-|---|---|---|
-| 1 (Calorie Counting) | _✨ instantaneous_ | < 20min |
-| 2 (Rock Paper Scissors) | _✨ instantaneous_ | < 30min |
-| 3 (Rucksack Reorganization) | _✨ instantaneous_ | < 30min |
-| 4 (Camp Cleanup) | _✨ instantaneous_ | < 30min |
-| 5 (Supply Stacks) | _✨ instantaneous_ | < 1.5h |
-| 6 (Tuning Trouble) | _✨ instantaneous_ | ±10min |
-| 7 (No Space Left On Device) | _✨ instantaneous_ | < 30min |
-| 8 (Treetop Tree House) | _✨ instantaneous_ | < 1h |
-| 9 (Rope Bridge) | _✨ instantaneous_ | < 20min |
-| 10 (Cathode-Ray Tube) | _✨ instantaneous_ | < 1h |
-| 11 (Monkey in the Middle) | _✨ instantaneous_ | ±2h |
-| 12 (Hill Climbing Algorithm) | _✨ instantaneous_ | ±1.5h |
-| 13 (Distress Signal) | _✨ instantaneous_ | ±1.5h |
-| 14 (Regolith Reservoir) | _✨ instantaneous_ | ±2h |
-| 15 (Beacon Exclusion Zone) | < 1s | ±3h |
-| 16 (Proboscidea Volcanium) | ±1.5s (down from ±30min) | ±1.5h and ±1h later |
-| 17 (Pyroclastic Flow) | ±5ms | ±1h and ±1h later |
-| 18 (Boiling Boulders) | ±40ms | ±2h |
-| 19 (Not Enough Minerals) | ±10ms | ±3h (on day 25) |
-| 20 (Grove Positioning System) | ±120ms (down from ±5h) | ±3h |
-| 21 (Monkey Math) | _✨ instantaneous_ | ±1h |
-| 22 (Monkey Map) | _✨ instantaneous_ | 🫣 I'd rather not say |
-| 23 (Unstable Diffusion) | ±350ms | ±1h |
-| 24 (Blizzard Basin) | ±200ms | ±1.5h |
-| 25 (Full of Hot Air) | _✨ instantaneous_ | ±30min |
-
+| Day                           | Computer time            | Kelley time (rough retrospective estimates) |
+| ----------------------------- | ------------------------ | ------------------------------------------- |
+| 1 (Calorie Counting)          | _✨ instantaneous_       | < 20min                                     |
+| 2 (Rock Paper Scissors)       | _✨ instantaneous_       | < 30min                                     |
+| 3 (Rucksack Reorganization)   | _✨ instantaneous_       | < 30min                                     |
+| 4 (Camp Cleanup)              | _✨ instantaneous_       | < 30min                                     |
+| 5 (Supply Stacks)             | _✨ instantaneous_       | < 1.5h                                      |
+| 6 (Tuning Trouble)            | _✨ instantaneous_       | ±10min                                      |
+| 7 (No Space Left On Device)   | _✨ instantaneous_       | < 30min                                     |
+| 8 (Treetop Tree House)        | _✨ instantaneous_       | < 1h                                        |
+| 9 (Rope Bridge)               | _✨ instantaneous_       | < 20min                                     |
+| 10 (Cathode-Ray Tube)         | _✨ instantaneous_       | < 1h                                        |
+| 11 (Monkey in the Middle)     | _✨ instantaneous_       | ±2h                                         |
+| 12 (Hill Climbing Algorithm)  | _✨ instantaneous_       | ±1.5h                                       |
+| 13 (Distress Signal)          | _✨ instantaneous_       | ±1.5h                                       |
+| 14 (Regolith Reservoir)       | _✨ instantaneous_       | ±2h                                         |
+| 15 (Beacon Exclusion Zone)    | < 1s                     | ±3h                                         |
+| 16 (Proboscidea Volcanium)    | ±1.5s (down from ±30min) | ±1.5h and ±1h later                         |
+| 17 (Pyroclastic Flow)         | ±5ms                     | ±1h and ±1h later                           |
+| 18 (Boiling Boulders)         | ±40ms                    | ±2h                                         |
+| 19 (Not Enough Minerals)      | ±10ms                    | ±3h (on day 25)                             |
+| 20 (Grove Positioning System) | ±120ms (down from ±5h)   | ±3h                                         |
+| 21 (Monkey Math)              | _✨ instantaneous_       | ±1h                                         |
+| 22 (Monkey Map)               | _✨ instantaneous_       | 🫣 I'd rather not say                        |
+| 23 (Unstable Diffusion)       | ±350ms                   | ±1h                                         |
+| 24 (Blizzard Basin)           | ±200ms                   | ±1.5h                                       |
+| 25 (Full of Hot Air)          | _✨ instantaneous_       | ±30min                                      |
 
 ## Diary
 
@@ -203,7 +202,7 @@ See https://adventofcode.com/2022
 
   _Update: actually, with `--release`, the bonus part takes around 1h 45m._
 
-  _Update (on day 26): ACTUALLY, I was just super stupid and it turns out the whole performance bottleneck was just due to the for-loop in the `moduleo` function (which makes sure that the modulo ends up above zero). Removing it, everything works in ±100ms. Silly me 😂_
+  _Update (on day 26): ACTUALLY, I was just super stupid and it turns out the whole performance bottleneck was just due to the for-loop in the `modulo` function (which makes sure that the modulo ends up above zero). Removing it, everything works in ±100ms. Silly me 😂_
 
 - **Day 21 (Monkey Math)**
 
