@@ -3,12 +3,11 @@ use std::{
     cmp::Reverse,
     collections::{BinaryHeap, HashMap},
     fmt::Debug,
-    fs,
     time::Instant,
 };
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
 
     time(|| {
         let data = parse(&filecontents);
@@ -260,4 +259,22 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
 
     // Not really sure why, but this one takes waay long to compute, even though it's quite fast on the actual data (and produces the right answer). So.. yeah
     // assert_eq!(search(&data, true), 1707);
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

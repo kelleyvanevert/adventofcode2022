@@ -30,20 +30,16 @@ fn to_desired_outcome(s: &str) -> i32 {
 }
 
 fn main() {
-    let lines = read_file_to_lines("./input.txt");
+    let lines = get_input()
+        .lines()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
 
     println!("total score: {}", score_total(lines.clone(), round_score));
     println!(
         "total score (new rules): {}",
         score_total(lines.clone(), round_score_new_rules)
     );
-}
-
-fn read_file_to_lines(path: &str) -> Vec<String> {
-    let file = File::open(path).unwrap();
-    let lines = io::BufReader::new(file).lines();
-
-    lines.into_iter().map(|line| line.unwrap()).collect()
 }
 
 fn outcome(me: i32, opponent: i32) -> i32 {
@@ -125,4 +121,22 @@ fn test_score() {
             round_score_new_rules
         )
     );
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

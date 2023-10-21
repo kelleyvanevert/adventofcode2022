@@ -1,10 +1,9 @@
 mod parse;
 
 use crate::parse::parse;
-use std::fs;
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
     let (stacks, instructions) = parse(&filecontents);
 
     let mut stacks_a = stacks.clone();
@@ -98,4 +97,22 @@ move 1 from 1 to 2
         stacks_b,
     );
     assert_eq!("MCD".to_owned(), top_crates(&stacks_b));
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

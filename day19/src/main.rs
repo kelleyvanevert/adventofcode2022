@@ -1,11 +1,11 @@
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
-use std::{cmp::Reverse, collections::BinaryHeap, fmt::Debug, fs, time::Instant};
+use std::{cmp::Reverse, collections::BinaryHeap, fmt::Debug, time::Instant};
 
 const DEBUG: bool = false;
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
     let blueprints = parse(&filecontents);
 
     time(|| {
@@ -337,4 +337,22 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
 
     assert_eq!(find_max(&blueprints[0].1, 24), 9);
     assert_eq!(find_max(&blueprints[1].1, 24), 12);
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

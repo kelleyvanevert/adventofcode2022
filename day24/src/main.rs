@@ -1,7 +1,7 @@
-use std::{collections::HashSet, fs, time::Instant};
+use std::{collections::HashSet, time::Instant};
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
 
     time(|| {
         let steps = solve(&filecontents, false);
@@ -137,4 +137,22 @@ fn test_all() {
 
     assert_eq!(solve(s, false), 18);
     assert_eq!(solve(s, true), 54);
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

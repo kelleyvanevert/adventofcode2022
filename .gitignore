@@ -1,4 +1,9 @@
 target
 input.txt
 .DS_Store
+
+# we don't want to add the original input text files
 input.txt
+
+# .. instead, we add a simply encrypted version of them, which is automatically decrypted on the fly with the KEY env var which can be put in here:
+.env

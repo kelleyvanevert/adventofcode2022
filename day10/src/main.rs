@@ -1,7 +1,5 @@
-use std::fs;
-
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
 
     let (accum, image) = solve(&filecontents);
     println!("Solution: {}", accum);
@@ -211,4 +209,22 @@ noop";
         .to_string();
 
     assert_eq!((13140, image), solve(s));
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

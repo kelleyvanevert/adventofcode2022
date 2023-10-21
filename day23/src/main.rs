@@ -1,12 +1,11 @@
 use std::{
     collections::{HashMap, HashSet},
-    fs,
     io::{self, Write},
     time::Instant,
 };
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
 
     time(|| {
         println!();
@@ -233,4 +232,22 @@ fn test_all() {
     assert_eq!(solve(s), 110);
 
     assert_eq!(solve_v2(s), 20);
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

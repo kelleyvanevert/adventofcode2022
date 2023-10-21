@@ -1,7 +1,7 @@
-use std::{collections::HashSet, fs};
+use std::collections::HashSet;
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
 
     println!("Num visited: {}", solve(&filecontents, 2));
     println!("Num visited v2: {}", solve(&filecontents, 10));
@@ -79,4 +79,22 @@ R 2
     assert_eq!(13, solve(s, 2));
 
     assert_eq!(1, solve(s, 10));
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

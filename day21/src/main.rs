@@ -1,9 +1,9 @@
 use either::Either::{self, Left, Right};
 use regex::Regex;
-use std::{collections::HashMap, fs};
+use std::collections::HashMap;
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
     let nodes = parse(&filecontents);
 
     let root = build(&nodes, "root", false);
@@ -153,4 +153,22 @@ hmdt: 32";
 
     let humn = build_humn_expr(&nodes);
     assert_eq!(humn.eval(), 301);
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

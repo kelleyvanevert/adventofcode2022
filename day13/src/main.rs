@@ -4,10 +4,9 @@ pub mod parse;
 use crate::parse::parse_packet;
 use packet::Packet;
 use parse::parse;
-use std::fs;
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
 
     let pairs = parse(&filecontents);
     println!("Solution: {}", solve(&pairs));
@@ -69,4 +68,22 @@ fn test_solve() {
     let pairs = parse(s);
     assert_eq!(solve(&pairs), 13);
     assert_eq!(solve_v2(&pairs), 140);
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

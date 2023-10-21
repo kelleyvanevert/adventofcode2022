@@ -1,10 +1,10 @@
-use std::{fs, str::FromStr};
+use std::str::FromStr;
 
 use derive_builder::Builder;
 use regex::Regex;
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
     println!("Monkey business: {}", solve(&parse(&filecontents), false));
     println!("Monkey business v2: {}", solve(&parse(&filecontents), true));
 }
@@ -238,4 +238,22 @@ Monkey 3:
 
     assert_eq!(10605, solve(&monkeys, false));
     assert_eq!(2713310158, solve(&monkeys, true));
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

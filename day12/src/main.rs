@@ -1,11 +1,10 @@
 use std::{
     collections::{BinaryHeap, HashSet},
-    fs,
     time::Instant,
 };
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
     let (start, end, map) = parse(&filecontents);
 
     let now = Instant::now();
@@ -158,4 +157,22 @@ abdefghi";
     assert_eq!(((0, 0), (5, 2), map.clone()), parse(s));
     assert_eq!(31, solve(HashSet::from([(0, 0)]), (5, 2), &map));
     assert_eq!(29, solve(find_starting_positions(&map), (5, 2), &map));
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

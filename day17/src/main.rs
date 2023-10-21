@@ -2,7 +2,6 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    fs,
     time::Instant,
 };
 
@@ -38,8 +37,7 @@ fn main() {
 }
 
 fn get_jet_pattern() -> Vec<i64> {
-    fs::read_to_string("./input.txt")
-        .unwrap()
+    get_input()
         .trim()
         .chars()
         .map(|c| if c == '>' { 1 } else { -1 })
@@ -326,4 +324,22 @@ fn test() {
         chamber.simulate(1000000000000, &jet_pattern, &rock_pattern);
         assert_eq!(chamber.top(), 1514285714288);
     }
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

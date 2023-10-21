@@ -1,7 +1,5 @@
-use std::fs;
-
 fn main() {
-    let s = fs::read_to_string("./input.txt").unwrap();
+    let s = get_input();
     let nodes = parse(&s);
     println!("{}", nodes[0].visualize("", &nodes));
     println!("(total, smol_total, rm_size) = {:?}", solve(&nodes));
@@ -179,4 +177,22 @@ $ ls
     );
 
     assert_eq!((48381165, 95437, 24933642), solve(&nodes));
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

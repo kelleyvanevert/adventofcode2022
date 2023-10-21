@@ -7,12 +7,11 @@ use regex::Regex;
 use std::{
     collections::{HashMap, HashSet},
     f32::consts::PI,
-    fs,
     time::Instant,
 };
 
 fn main() {
-    let filecontents = fs::read_to_string("./input.txt").unwrap();
+    let filecontents = get_input();
 
     time(|| {
         let pass = solve(&filecontents, None);
@@ -451,4 +450,22 @@ fn test_all() {
     assert_eq!(solve(s, None), 6032);
 
     assert_eq!(solve(s, Some(4)), 5031);
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }

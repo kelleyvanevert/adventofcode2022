@@ -4,16 +4,13 @@ use std::{
 };
 
 fn main() {
-    let lines = read_file_to_lines("./input.txt");
+    let lines = get_input()
+        .lines()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
+
     println!("total: {}", solve(lines.clone()));
     println!("total v2: {}", solve_v2(lines));
-}
-
-fn read_file_to_lines(path: &str) -> Vec<String> {
-    let file = File::open(path).unwrap();
-    let lines = io::BufReader::new(file).lines();
-
-    lines.into_iter().map(|line| line.unwrap()).collect()
 }
 
 fn solve(lines: Vec<String>) -> i32 {
@@ -113,4 +110,22 @@ fn test_solve_v2() {
             "CrZsJsPPZsGzwwsLwLmpwMDw".into(),
         ])
     );
+}
+
+fn get_input() -> String {
+    dotenv::dotenv().ok();
+    let key = std::env::var("KEY").expect("Missing env var KEY");
+
+    let bytes = std::fs::read("./input.txt.encrypted").unwrap();
+    decrypt(key.as_bytes(), &bytes)
+}
+
+fn decrypt(key: &[u8], enc: &[u8]) -> String {
+    String::from_utf8(
+        enc.iter()
+            .enumerate()
+            .map(|(i, &b)| b.wrapping_sub(key[i % key.len()]))
+            .collect(),
+    )
+    .unwrap()
 }
