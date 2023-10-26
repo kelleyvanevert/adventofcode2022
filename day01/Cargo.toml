@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 dotenv = "0.15.0"
+lazy_static = "1.4.0"
+midly = "0.5.3"

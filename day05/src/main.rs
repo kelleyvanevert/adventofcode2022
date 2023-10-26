@@ -1,6 +1,88 @@
 mod parse;
 
+use std::sync::Mutex;
+
 use crate::parse::parse;
+use lazy_static::lazy_static;
+use midly::{
+    num::{u28, u7},
+    Header, Smf, Track, TrackEvent, TrackEventKind,
+};
+
+lazy_static! {
+    static ref OUT: Mutex<MidiOutput> = Mutex::new(MidiOutput::new());
+}
+
+struct MidiOutput {
+    smf: Smf<'static>,
+    skip: u32,
+}
+
+impl MidiOutput {
+    fn new() -> MidiOutput {
+        let smf = Smf {
+            header: Header::new(
+                midly::Format::SingleTrack,
+                midly::Timing::Metrical(80.into()),
+            ),
+            tracks: vec![Track::new()],
+        };
+
+        Self { smf, skip: 0 }
+    }
+
+    fn note(&mut self, key: u7, vel: u7, len: u28) {
+        self.smf.tracks[0].push(TrackEvent {
+            delta: self.skip.into(),
+            kind: TrackEventKind::Midi {
+                channel: 0.into(),
+                message: midly::MidiMessage::NoteOn { key, vel },
+            },
+        });
+
+        self.smf.tracks[0].push(TrackEvent {
+            delta: len,
+            kind: TrackEventKind::Midi {
+                channel: 0.into(),
+                message: midly::MidiMessage::NoteOff { key, vel: 0.into() },
+            },
+        });
+
+        self.skip = 0;
+    }
+
+    fn chord(&mut self, keys: Vec<u7>, mut len: u28) {
+        for key in &keys {
+            self.smf.tracks[0].push(TrackEvent {
+                delta: self.skip.into(),
+                kind: TrackEventKind::Midi {
+                    channel: 0.into(),
+                    message: midly::MidiMessage::NoteOn {
+                        key: *key,
+                        vel: 100.into(),
+                    },
+                },
+            });
+
+            self.skip = 0;
+        }
+
+        for key in &keys {
+            self.smf.tracks[0].push(TrackEvent {
+                delta: len,
+                kind: TrackEventKind::Midi {
+                    channel: 0.into(),
+                    message: midly::MidiMessage::NoteOff {
+                        key: *key,
+                        vel: 0.into(),
+                    },
+                },
+            });
+
+            len = 0.into();
+        }
+    }
+}
 
 fn main() {
     let filecontents = get_input();
@@ -13,6 +95,8 @@ fn main() {
     let mut stacks_b = stacks.clone();
     crane(&mut stacks_b, instructions, true);
     println!("second result: {}", top_crates(&stacks_b));
+
+    OUT.lock().unwrap().smf.save("out.mid").unwrap();
 }
 
 fn crane(
@@ -21,6 +105,17 @@ fn crane(
     bonus_rules: bool,
 ) {
     for (amount, source, destination) in instructions {
+        println!("instruction {amount} {source} {destination}");
+
+        OUT.lock().unwrap().chord(
+            vec![
+                (50 + amount as u8).into(),
+                (50 + source as u8).into(),
+                (50 + destination as u8).into(),
+            ],
+            40.into(),
+        );
+
         if bonus_rules {
             let len = stacks[source - 1].len();
 

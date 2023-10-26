@@ -1,4 +1,52 @@
-use std::{time::Instant, vec};
+use lazy_static::lazy_static;
+use midly::{
+    num::{u28, u7},
+    Header, Smf, Track, TrackEvent, TrackEventKind,
+};
+use std::{sync::Mutex, time::Instant, vec};
+
+lazy_static! {
+    static ref OUT: Mutex<MidiOutput> = Mutex::new(MidiOutput::new());
+}
+
+struct MidiOutput {
+    smf: Smf<'static>,
+    skip: u32,
+}
+
+impl MidiOutput {
+    fn new() -> MidiOutput {
+        let smf = Smf {
+            header: Header::new(
+                midly::Format::SingleTrack,
+                midly::Timing::Metrical(80.into()),
+            ),
+            tracks: vec![Track::new()],
+        };
+
+        Self { smf, skip: 0 }
+    }
+
+    fn note(&mut self, key: u7, vel: u7, len: u28) {
+        self.smf.tracks[0].push(TrackEvent {
+            delta: self.skip.into(),
+            kind: TrackEventKind::Midi {
+                channel: 0.into(),
+                message: midly::MidiMessage::NoteOn { key, vel },
+            },
+        });
+
+        self.smf.tracks[0].push(TrackEvent {
+            delta: len,
+            kind: TrackEventKind::Midi {
+                channel: 0.into(),
+                message: midly::MidiMessage::NoteOff { key, vel: 0.into() },
+            },
+        });
+
+        self.skip = 0;
+    }
+}
 
 fn main() {
     let filecontents = get_input();
@@ -14,6 +62,8 @@ fn main() {
         println!("Max three: {:?}", max_three);
         println!("Their sum: {}", max_three.iter().sum::<i32>());
     });
+
+    OUT.lock().unwrap().smf.save("out.mid").unwrap();
 }
 
 fn time<F>(mut f: F)
@@ -30,9 +80,16 @@ fn keep_sorted_desc(mut max: Vec<i32>, num: i32) -> Vec<i32> {
         if num > max[i] {
             max.insert(i, num);
             max.pop();
+
+            OUT.lock()
+                .unwrap()
+                .note((36 + i as u8).into(), 100.into(), 20.into());
+
             return max;
         }
     }
+
+    OUT.lock().unwrap().skip = 20;
 
     max
 }
