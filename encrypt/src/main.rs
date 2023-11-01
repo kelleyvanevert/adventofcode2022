@@ -11,14 +11,26 @@ fn main() {
     ];
 
     for day in days {
-        if std::path::Path::new(&format!("../{day}/input.txt")).exists() {
+        let input_exists = std::path::Path::new(&format!("../{day}/input.txt")).exists();
+        let input_encrypted_exists =
+            std::path::Path::new(&format!("../{day}/input.txt.encrypted")).exists();
+
+        if input_exists && !input_encrypted_exists {
             let input = std::fs::read_to_string(format!("../{day}/input.txt")).unwrap();
             let encrypted = encrypt(key, &input);
             assert_eq!(decrypt(key, &encrypted), input);
             std::fs::write(format!("../{day}/input.txt.encrypted"), encrypted)
                 .expect("could not write encrypted file");
 
-            println!("{day} - DONE");
+            println!("{day} - ENCRYPTED");
+        } else if !input_exists && input_encrypted_exists {
+            let input = std::fs::read(format!("../{day}/input.txt.encrypted")).unwrap();
+            let decrypted = decrypt(key, &input);
+            assert_eq!(encrypt(key, &decrypted), input);
+            std::fs::write(format!("../{day}/input.txt"), decrypted)
+                .expect("could not write decrypted file");
+
+            println!("{day} - decypted");
         } else {
             println!("{day} (skipped)");
         }
